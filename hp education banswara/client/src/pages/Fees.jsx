@@ -80,7 +80,7 @@ const Fees = () => {
   const handleDownload = async (p) => {
     try {
       // Fetch all payments for this student to show ledger in receipt
-      const studentPaymentsRes = await fetch(`http://localhost:5000/api/fees/student/${p.studentId?._id}`);
+      const studentPaymentsRes = await fetch(`${API_URL}/fees/student/${p.studentId?._id}`);
       const studentPayments = await studentPaymentsRes.json();
       
       const studentDues = dues.find(d => d._id === p.studentId?._id);

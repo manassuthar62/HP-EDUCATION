@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, User, CreditCard, Calendar, BookOpen, Hash } from 'lucide-react';
+import API_URL from '../config';
 
 const RecordPayment = () => {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const RecordPayment = () => {
       
       try {
         // Fetch current payment history to calculate balance
-        const res = await fetch(`http://localhost:5000/api/fees/student/${id}`);
+        const res = await fetch(`${API_URL}/fees/student/${id}`);
         const payments = await res.json();
         const totalPaid = Array.isArray(payments) ? payments.reduce((sum, p) => sum + p.amount, 0) : 0;
         const balance = course.finalFee - totalPaid;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Phone, Mail, MapPin, BookOpen, Clock, CreditCard, Calendar, Hash, Receipt, Download, Trash2, Edit } from 'lucide-react';
 import { generateReceipt } from '../utils/receiptGenerator';
+import API_URL from '../config';
 
 const StudentDetails = () => {
   const { id } = useParams();
@@ -22,7 +23,7 @@ const StudentDetails = () => {
         }
         setStudent(studentData);
 
-        const transRes = await fetch('http://127.0.0.1:5000/api/fees');
+        const transRes = await fetch(`${API_URL}/fees`);
         const transData = await transRes.json();
         // Filter transactions for this student
         const studentTrans = transData.filter(t => t.studentId?._id === id);
@@ -46,7 +47,7 @@ const StudentDetails = () => {
 
   const handleDownload = async (t) => {
     try {
-      const studentPaymentsRes = await fetch(`http://localhost:5000/api/fees/student/${id}`);
+      const studentPaymentsRes = await fetch(`${API_URL}/fees/student/${id}`);
       const studentPayments = await studentPaymentsRes.json();
       
       generateReceipt({
