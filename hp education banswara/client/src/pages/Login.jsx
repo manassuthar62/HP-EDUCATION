@@ -37,10 +37,11 @@ const Login = ({ onLogin }) => {
 
   return (
     <div style={{
-      height: '100vh',
+      minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      padding: '2rem 1rem',
       backgroundColor: 'var(--bg-main)',
       background: 'linear-gradient(135deg, var(--bg-main) 0%, #0f172a 100%)'
     }}>
@@ -54,8 +55,8 @@ const Login = ({ onLogin }) => {
         border: '1px solid var(--border)',
         textAlign: 'center'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-          <img src="/hp logo.png" alt="HP Education" style={{ width: '180px', height: '180px', objectFit: 'contain' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <img src="/hp logo.png" alt="HP Education" style={{ width: '120px', height: '120px', objectFit: 'contain' }} />
         </div>
         
         <h1 style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>Admin Login</h1>
