@@ -1,153 +1,152 @@
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
+const numberToWords = (num) => {
+  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  if ((num = num.toString()).length > 9) return 'Overflow';
+  let n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+  if (!n) return '';
+  let str = '';
+  str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : '';
+  str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : '';
+  str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : '';
+  str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : '';
+  str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'Only' : 'Only';
+  return str;
+};
+
 export const generateReceipt = (data) => {
-  const doc = new jsPDF();
-  const redColor = [190, 30, 45]; // Dark red like the photo
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const redColor = [190, 30, 45]; // Dark red
   
-  // Outer Border
-  doc.setDrawColor(redColor[0], redColor[1], redColor[2]);
-  doc.setLineWidth(0.5);
-  doc.rect(5, 5, 200, 140); // Receipt Frame
-  
-  // Header (Text-based for stability, logo can be added once stable)
-  doc.setTextColor(redColor[0], redColor[1], redColor[2]);
-  doc.setFontSize(28);
-  doc.setFont("helvetica", "bold");
-  doc.text("HP EDUCATION", 105, 20, { align: 'center' });
-  
-  // Try to add logo using a pre-loaded image approach
-  try {
-     const img = new Image();
-     img.src = '/hp logo.png';
-     doc.addImage(img, 'PNG', 15, 8, 25, 25);
-  } catch (e) {
-     console.log("Logo load error:", e);
-  }
-  
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text("Subhash Nagar, College Road, Banswara (Raj.)", 105, 26, { align: 'center' });
-  doc.text("Mo. 9414401524, 9414401525", 105, 31, { align: 'center' });
-  
-  // Horizontal Line
-  doc.setLineWidth(0.5);
-  doc.line(10, 35, 200, 35);
-  
-  // Receipt Details
-  doc.setFontSize(11);
-  doc.setTextColor(0, 0, 0);
-  
-  doc.text(`S.No. ${data.receiptId || 'N/A'}`, 15, 42);
-  doc.text(`Date: ${new Date(data.paymentDate).toLocaleDateString()}`, 150, 42);
-  
-  doc.text(`Received From: ${data.studentName}`, 15, 50);
-  doc.line(45, 51, 195, 51); // Underline for name
-  
-  doc.text(`Course: ${data.courseName}`, 15, 58);
-  doc.line(30, 59, 90, 59);
-  
-  doc.text(`Batch: ${data.batchName || 'N/A'}`, 100, 58);
-  doc.line(115, 59, 195, 59);
-  
-  doc.text(`Mobile: ${data.studentContact}`, 15, 66);
-  doc.line(30, 67, 100, 67);
-  
-  // Detailed Payment Ledger
-  const payments = Array.isArray(data.allPayments) ? data.allPayments : [];
-  const historyData = [];
-  
-  // 1. Show all ACTUAL payments made
-  let totalPaid = 0;
-  payments.forEach((p, index) => {
-    totalPaid += (p.amount || 0);
-    historyData.push([
-      index + 1,
-      `${p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : 'N/A'} - ${p.remarks || 'Fee Payment'} (PAID)`,
-      `Rs. ${(p.amount || 0).toLocaleString()}/-`
-    ]);
-  });
-
-  // 2. Calculate and Show FUTURE (UNPAID) Installments
-  const remainingToPlan = data.totalFee - totalPaid;
-  const instCount = data.installmentsCount || 1;
-  
-  // Only show future installments if it's an installment plan and there's a balance
-  if (remainingToPlan > 0 && instCount > 0) {
-    // Check how many installments are already "covered" by existing payments
-    // (Assuming first payment was downpayment, and others were installments)
-    const paidInstCount = Math.max(0, payments.length - 1); 
-    const remainingInstCount = Math.max(0, instCount - paidInstCount);
+  const drawSingleReceipt = (startY) => {
+    // Outer Border
+    doc.setDrawColor(redColor[0], redColor[1], redColor[2]);
+    doc.setLineWidth(0.5);
+    doc.rect(5, startY, 200, 140); // Receipt Frame
     
-    if (remainingInstCount > 0) {
-      const emiAmount = Math.ceil(remainingToPlan / remainingInstCount);
-      for (let i = 1; i <= remainingInstCount; i++) {
-        historyData.push([
-          historyData.length + 1,
-          `Upcoming Installment #${paidInstCount + i} (UNPAID)`,
-          `Rs. ${emiAmount.toLocaleString()}/-`
-        ]);
+    // Header
+    doc.setTextColor(redColor[0], redColor[1], redColor[2]);
+    doc.setFontSize(26);
+    doc.setFont("helvetica", "bold");
+    doc.text("HP EDUCATION", 105, startY + 12, { align: 'center' });
+    
+    // Logo
+    try {
+       const img = new Image();
+       img.src = '/hp logo.png';
+       doc.addImage(img, 'PNG', 15, startY + 4, 22, 22);
+    } catch (e) {
+       console.log("Logo load error:", e);
+    }
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Subhash Nagar, College Road, Banswara (Raj.)", 105, startY + 18, { align: 'center' });
+    doc.text("Mo. 9414401524, 9414401525", 105, startY + 23, { align: 'center' });
+    
+    // Horizontal Line
+    doc.setLineWidth(0.3);
+    doc.line(10, startY + 27, 200, startY + 27);
+    
+    // Receipt Details
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`S.No. ${data.receiptId || 'N/A'}`, 15, startY + 33);
+    doc.text(`Date: ${new Date(data.paymentDate).toLocaleDateString()}`, 155, startY + 33);
+    
+    doc.text(`Received From: ${data.studentName}`, 15, startY + 40);
+    doc.line(45, startY + 41, 195, startY + 41);
+    
+    doc.text(`Course: ${data.courseName}`, 15, startY + 47);
+    doc.line(30, startY + 48, 90, startY + 48);
+    
+    doc.text(`Batch: ${data.batchName || 'N/A'}`, 100, startY + 47);
+    doc.line(115, startY + 48, 195, startY + 48);
+    
+    doc.text(`Mobile: ${data.studentContact}`, 15, startY + 54);
+    doc.line(30, startY + 55, 90, startY + 55);
+
+    doc.text(`Payment Mode: ${data.paymentMethod || 'N/A'}`, 115, startY + 54);
+    doc.line(145, startY + 55, 195, startY + 55);
+    
+    // Table Data
+    const payments = Array.isArray(data.allPayments) ? data.allPayments : [];
+    const historyData = [];
+    let totalPaid = 0;
+    
+    payments.forEach((p, index) => {
+      totalPaid += (p.amount || 0);
+      historyData.push([
+        index + 1,
+        `${p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : 'N/A'} - ${p.remarks || 'Fee Payment'} (PAID)`,
+        `Rs. ${(p.amount || 0).toLocaleString()}/-`
+      ]);
+    });
+
+    const remainingToPlan = data.totalFee - totalPaid;
+    const instCount = data.installmentsCount || 1;
+    if (remainingToPlan > 0 && instCount > 0) {
+      const paidInstCount = Math.max(0, payments.length - 1); 
+      const remainingInstCount = Math.max(0, instCount - paidInstCount);
+      if (remainingInstCount > 0) {
+        const emiAmount = Math.ceil(remainingToPlan / remainingInstCount);
+        for (let i = 1; i <= Math.min(remainingInstCount, 3); i++) {
+          historyData.push([
+            historyData.length + 1,
+            `Upcoming Installment #${paidInstCount + i} (UNPAID)`,
+            `Rs. ${emiAmount.toLocaleString()}/-`
+          ]);
+        }
       }
     }
-  }
 
-  // Add Summary Rows
-  historyData.push(['', 'TOTAL COURSE FEE', `Rs. ${(data.totalFee || 0).toLocaleString()}/-`]);
-  historyData.push(['', 'TOTAL PAID TILL DATE', `Rs. ${totalPaid.toLocaleString()}/-`]);
-  historyData.push(['', 'REMAINING BALANCE', `Rs. ${(data.totalFee - totalPaid).toLocaleString()}/-`]);
-
-  if (data.nextDueDate && (data.totalFee - totalPaid) > 0) {
-    historyData.push(['', 'NEXT DUE DATE', new Date(data.nextDueDate).toLocaleDateString()]);
-  }
-
-  doc.autoTable({
-    startY: 72,
-    head: [['S.No', "Payment Description (Installments/Down Payment)", 'Amount']],
-    body: historyData,
-    theme: 'grid',
-    headStyles: { 
-      fillColor: redColor, 
-      textColor: [255, 255, 255],
-      halign: 'center'
-    },
-    styles: { 
-      lineColor: redColor, 
-      lineWidth: 0.1,
-      fontSize: 9,
-      cellPadding: 2
-    },
-    columnStyles: {
-      0: { cellWidth: 15, halign: 'center' },
-      1: { cellWidth: 120 },
-      2: { cellWidth: 55, halign: 'right', fontStyle: 'bold' }
-    },
-    didParseCell: (data) => {
-      // Bold the summary rows (last 3 or 4 rows depending on Due Date)
-      const summaryRowsCount = historyData.length > 3 ? (data.nextDueDate ? 4 : 3) : 0;
-      if (data.row.index >= historyData.length - summaryRowsCount) {
-        data.cell.styles.fontStyle = 'bold';
-        if (data.row.index === historyData.length - 2) data.cell.styles.textColor = redColor; // Balance row in red
-      }
+    historyData.push(['', 'TOTAL COURSE FEE', `Rs. ${(data.totalFee || 0).toLocaleString()}/-`]);
+    historyData.push(['', 'TOTAL PAID TILL DATE', `Rs. ${totalPaid.toLocaleString()}/-`]);
+    historyData.push(['', 'REMAINING BALANCE', `Rs. ${(data.totalFee - totalPaid).toLocaleString()}/-`]);
+    if (data.nextDueDate && (data.totalFee - totalPaid) > 0) {
+      historyData.push(['', 'NEXT DUE DATE', new Date(data.nextDueDate).toLocaleDateString()]);
     }
-  });
+
+    doc.autoTable({
+      startY: startY + 60,
+      head: [['S.No', "Payment Description", 'Amount']],
+      body: historyData,
+      theme: 'grid',
+      headStyles: { fillColor: redColor, textColor: [255, 255, 255], halign: 'center' },
+      styles: { lineColor: redColor, lineWidth: 0.1, fontSize: 8, cellPadding: 1.5 },
+      columnStyles: { 0: { cellWidth: 12, halign: 'center' }, 1: { cellWidth: 130 }, 2: { cellWidth: 43, halign: 'right', fontStyle: 'bold' } },
+      margin: { left: 10, right: 10 },
+      didParseCell: (cellData) => {
+        const summaryRowsCount = data.nextDueDate ? 4 : 3;
+        if (cellData.row.index >= historyData.length - summaryRowsCount) {
+          cellData.cell.styles.fontStyle = 'bold';
+          if (cellData.row.index === historyData.length - 2) cellData.cell.styles.textColor = redColor;
+        }
+      }
+    });
+    
+    const finalY = doc.lastAutoTable.finalY + 6;
+    doc.setFontSize(9);
+    doc.text(`Amount in word: ${numberToWords(data.amount || 0)}`, 15, finalY);
+    doc.line(40, finalY + 1, 150, finalY + 1); // Underline for words
+    
+    // Terms
+    doc.setFontSize(7);
+    doc.setTextColor(redColor[0], redColor[1], redColor[2]);
+    doc.text("Nirdesh (Terms & Conditions):-", 15, finalY + 8);
+    doc.text("1. Jama ki gayi fees kisi bhi sthiti mein wapas nahi hogi.  2. Fees nirdharit tareekh tak jama karwana aniwarya hai.", 15, finalY + 12);
+    doc.text("3. Due date ke 10 din baad tak fees jama na hone par admission radd kiya ja sakta hai.", 15, finalY + 16);
+    
+    // Sign
+    doc.setFontSize(10);
+    doc.text("Autho. Sign.", 165, finalY + 18);
+  };
+
+  // Draw only one receipt at the top
+  drawSingleReceipt(5);
   
-  const finalY = doc.lastAutoTable.finalY + 10;
-  
-  // Amount in words placeholder
-  doc.text(`Amount in word: ........................................................................................................`, 15, finalY);
-  
-  // Terms and Conditions (Hindi)
-  doc.setFontSize(8);
-  doc.setTextColor(redColor[0], redColor[1], redColor[2]);
-  doc.text("Nirdesh (Terms):-", 15, finalY + 10);
-  doc.text("1. Jama fees wapas nahi hogi.", 15, finalY + 15);
-  doc.text("2. Fees ki likhi gai tareekh tak jama karwana aniwarya hai.", 15, finalY + 20);
-  doc.text("3. Tareekh nikalne ke 10 din adhik hone par sanstha dwara admission nirast kar diya jayega.", 15, finalY + 25);
-  
-  // Signature
-  doc.setFontSize(11);
-  doc.text("Autho. Sign.", 160, finalY + 25);
-  
-  // Save
   doc.save(`Receipt_${data.receiptId}.pdf`);
 };

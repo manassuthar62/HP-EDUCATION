@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit, Trash2, MoreVertical, Mail, Phone, X, Eye } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, MoreVertical, Mail, Phone, X, Eye, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API_URL from '../config';
 
@@ -47,6 +47,67 @@ const Students = () => {
         console.error('Delete error:', err);
         alert('❌ Connection Error');
       }
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    try {
+      setLoading(true);
+      // Fetch all fees to calculate balance
+      const feesRes = await fetch(`${API_URL}/fees`);
+      const feesData = await feesRes.json();
+      const allFees = Array.isArray(feesData) ? feesData : [];
+
+      const dataToExport = filteredStudents.map(student => {
+        const course = student.courses && student.courses[0];
+        const studentFees = allFees.filter(f => f.studentId?._id === student._id);
+        const paid = studentFees.reduce((sum, f) => sum + f.amount, 0);
+        const total = course?.finalFee || 0;
+        const balance = total - paid;
+
+        return {
+          'Student_ID': student.studentId,
+          'Name': student.name,
+          'Father_Name': student.fatherName,
+          'Contact': student.contact,
+          'Email': student.email || 'N/A',
+          'Course': course?.courseName || course?.courseId?.name || 'N/A',
+          'Batch': course?.batchName || course?.batchId?.name || 'N/A',
+          'Total_Fee': total,
+          'Paid_Fee': paid,
+          'Balance': balance,
+          'Address': student.address || 'N/A',
+          'Status': student.status
+        };
+      });
+
+      if (dataToExport.length === 0) {
+        alert('No data to export');
+        setLoading(false);
+        return;
+      }
+
+      // Generate CSV
+      const headers = Object.keys(dataToExport[0]);
+      const csvContent = [
+        headers.join(','),
+        ...dataToExport.map(row => headers.map(header => `"${row[header]}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Students_Report_${selectedCourse ? 'Course_Wise' : 'All'}_${new Date().toLocaleDateString()}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setLoading(false);
+    } catch (err) {
+      console.error('Export Error:', err);
+      alert('❌ Error exporting data');
+      setLoading(false);
     }
   };
 
@@ -110,8 +171,12 @@ const Students = () => {
               <option key={course._id} value={course._id}>{course.name}</option>
             ))}
           </select>
-          <button className="btn" style={{backgroundColor: 'var(--primary-light)'}}>
-            <Filter size={18} /> Filters
+          <button 
+            className="btn" 
+            style={{backgroundColor: 'var(--success)', color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem'}}
+            onClick={handleDownloadExcel}
+          >
+            <Download size={18} /> Export Excel
           </button>
         </div>
         <table>
@@ -125,7 +190,7 @@ const Students = () => {
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(students) && students.map(student => (
+            {Array.isArray(filteredStudents) && filteredStudents.map(student => (
               <tr key={student._id}>
                 <td>
                   <div style={{fontWeight: 600}}>{student.name}</div>

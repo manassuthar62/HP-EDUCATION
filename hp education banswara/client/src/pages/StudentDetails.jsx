@@ -63,6 +63,7 @@ const StudentDetails = () => {
         balance: balance,
         nextDueDate: course?.nextDueDate,
         paymentDate: t.paymentDate,
+        paymentMethod: t.paymentMethod,
         remarks: t.remarks || `Payment via ${t.paymentMethod}`,
         installment: t.remarks
       });

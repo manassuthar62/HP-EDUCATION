@@ -100,6 +100,7 @@ const Fees = () => {
         balance: studentInfo.balance || 0,
         nextDueDate: studentInfo.dueDate,
         paymentDate: p.paymentDate,
+        paymentMethod: p.paymentMethod,
         remarks: p.remarks || `Payment via ${p.paymentMethod}`,
         installment: p.remarks
       });
