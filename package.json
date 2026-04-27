@@ -1,0 +1,9 @@
+{
+  "name": "hp-education-root",
+  "version": "1.0.0",
+  "scripts": {
+    "install-all": "cd \"hp education banswara\" && npm run install-all",
+    "build": "cd \"hp education banswara\" && npm run build",
+    "start": "cd \"hp education banswara\" && npm start"
+  }
+}
