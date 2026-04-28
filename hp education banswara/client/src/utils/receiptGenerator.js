@@ -17,6 +17,15 @@ const numberToWords = (num) => {
   return str;
 };
 
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A';
+  const d = new Date(dateString);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export const generateReceipt = (data) => {
   const doc = new jsPDF('p', 'mm', 'a4');
   const redColor = [190, 30, 45]; // Dark red
@@ -37,7 +46,7 @@ export const generateReceipt = (data) => {
     try {
        const img = new Image();
        img.src = '/hp logo.png';
-       doc.addImage(img, 'PNG', 8, startY + 2, 32, 25);
+       doc.addImage(img, 'PNG', -3, startY + 2, 64, 25);
     } catch (e) {
        console.log("Logo load error:", e);
     }
@@ -46,7 +55,7 @@ export const generateReceipt = (data) => {
     doc.setFont("helvetica", "normal");
     doc.text("H.O.: Subhash Nagar, Gali No. 4, College Road, Banswara (Raj.)", 105, startY + 17, { align: 'center' });
     doc.text("C.O.: Gayatri Garden, College Road, Banswara (Raj.)", 105, startY + 21, { align: 'center' });
-    doc.text("Mo. 9414401561, 9414401524, 9414401525", 105, startY + 25, { align: 'center' });
+    doc.text("Mo. 9414401524, 9414401525", 105, startY + 25, { align: 'center' });
     
     // Horizontal Line
     doc.setLineWidth(0.3);
@@ -56,7 +65,7 @@ export const generateReceipt = (data) => {
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     doc.text(`S.No. ${data.receiptId || 'N/A'}`, 15, startY + 33);
-    doc.text(`Date: ${new Date(data.paymentDate).toLocaleDateString()}`, 155, startY + 33);
+    doc.text(`Date: ${formatDate(data.paymentDate)}`, 155, startY + 33);
     
     doc.text("Received From:", 15, startY + 40);
     doc.setFont("helvetica", "bold");
@@ -97,7 +106,7 @@ export const generateReceipt = (data) => {
       totalPaid += (p.amount || 0);
       historyData.push([
         index + 1,
-        `${p.paymentDate ? new Date(p.paymentDate).toLocaleDateString() : 'N/A'} - ${p.remarks || 'Fee Payment'} (PAID)`,
+        `${formatDate(p.paymentDate)} - ${p.remarks || 'Fee Payment'} (PAID)`,
         `Rs. ${(p.amount || 0).toLocaleString()}/-`
       ]);
     });
@@ -123,7 +132,7 @@ export const generateReceipt = (data) => {
     historyData.push(['', 'TOTAL PAID TILL DATE', `Rs. ${totalPaid.toLocaleString()}/-`]);
     historyData.push(['', 'REMAINING BALANCE', `Rs. ${(data.totalFee - totalPaid).toLocaleString()}/-`]);
     if (data.nextDueDate && (data.totalFee - totalPaid) > 0) {
-      historyData.push(['', 'NEXT DUE DATE', new Date(data.nextDueDate).toLocaleDateString()]);
+      historyData.push(['', 'NEXT DUE DATE', formatDate(data.nextDueDate)]);
     }
 
     doc.autoTable({

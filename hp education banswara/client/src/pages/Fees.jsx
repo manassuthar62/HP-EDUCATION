@@ -85,16 +85,18 @@ const Fees = () => {
       
       const studentDues = dues.find(d => d._id === p.studentId?._id);
       const studentInfo = studentDues || {};
-      const course = p.studentId?.courses?.[0] || {};
+      const studentCourse = p.studentId?.courses?.find(c => 
+        (c.courseId?._id || c.courseId).toString() === (p.courseId?._id || p.courseId).toString()
+      ) || {};
 
       generateReceipt({
         receiptId: p.receiptId,
         studentName: p.studentId?.name || 'N/A',
         studentContact: p.studentId?.contact || 'N/A',
         courseName: p.courseId?.name || 'N/A',
-        batchName: p.batchId?.name || 'N/A',
-        totalFee: course.finalFee || 0,
-        installmentsCount: course.installmentsCount || 1,
+        batchName: studentCourse.batchName || 'N/A',
+        totalFee: studentCourse.finalFee || 0,
+        installmentsCount: studentCourse.installmentsCount || 1,
         amount: p.amount, // current payment
         allPayments: Array.isArray(studentPayments) ? studentPayments : [p],
         balance: studentInfo.balance || 0,

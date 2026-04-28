@@ -7,7 +7,9 @@ const { Batch } = require('../models/Academic');
 router.get('/stats', async (req, res) => {
   try {
     const totalStudents = await Student.countDocuments();
-    const totalBatches = await Batch.countDocuments({ active: true });
+    const batches = await Batch.find({ active: true }).populate('courseId');
+    // Only count batches whose course still exists
+    const totalBatches = batches.filter(b => b.courseId !== null).length;
     
     const students = await Student.find();
     const studentIds = students.map(s => s._id.toString());

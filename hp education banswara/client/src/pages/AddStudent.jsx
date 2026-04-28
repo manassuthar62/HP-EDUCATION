@@ -12,7 +12,7 @@ const AddStudent = () => {
     name: '', fatherName: '', contact: '', alternateContact: '', email: '', address: '',
     courseName: '', batchName: '', rollNo: '',
     totalFee: '', discount: '0', paymentPlan: 'Installments', paidAmount: '0', installmentsCount: '1', nextDueDate: '',
-    paymentMethod: 'Cash', transactionId: ''
+    paymentMethod: 'Cash', utrNumber: ''
   });
 
   useEffect(() => {
@@ -98,7 +98,7 @@ const AddStudent = () => {
                 courseId: selectedCourse._id,
                 amount: actualPaid,
                 paymentMethod: formData.paymentMethod,
-                transactionId: formData.transactionId,
+                utrNumber: formData.utrNumber,
                 remarks: 'Admission Down Payment'
               })
             });
@@ -290,24 +290,24 @@ const AddStudent = () => {
               <div style={inputGroupStyle}>
                 <label style={labelStyle}><CreditCard size={18} /> Payment Method</label>
                 <div style={{ display: 'grid', gridTemplateColumns: formData.paymentMethod !== 'Cash' ? '1fr 1fr' : '1fr', gap: '1rem' }}>
-                  <select 
-                    style={inputStyle} 
-                    value={formData.paymentMethod} 
-                    onChange={e => setFormData({...formData, paymentMethod: e.target.value})}
-                  >
-                    <option value="Cash">Cash</option>
-                    <option value="Online">Online / UPI</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                  </select>
-                  {formData.paymentMethod !== 'Cash' && (
-                    <input 
+                    <select 
                       style={inputStyle} 
-                      type="text" 
-                      placeholder="Transaction ID / UTR" 
-                      value={formData.transactionId} 
-                      onChange={e => setFormData({...formData, transactionId: e.target.value})} 
-                    />
-                  )}
+                      value={formData.paymentMethod} 
+                      onChange={e => setFormData({...formData, paymentMethod: e.target.value})}
+                    >
+                      <option value="Cash">Cash</option>
+                      <option value="UPI">Online / UPI</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                    {formData.paymentMethod !== 'Cash' && (
+                      <input 
+                        style={inputStyle} 
+                        type="text" 
+                        placeholder="Transaction ID / UTR" 
+                        value={formData.utrNumber} 
+                        onChange={e => setFormData({...formData, utrNumber: e.target.value})} 
+                      />
+                    )}
                 </div>
               </div>
 
