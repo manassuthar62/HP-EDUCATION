@@ -22,12 +22,14 @@ const Fees = () => {
 
         // Calculate Stats locally for real-time accuracy
         const now = new Date();
-        const todayStr = now.toLocaleDateString();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        const formatDateLocal = (date) => {
+          const d = new Date(date);
+          return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+        };
+        const todayStr = formatDateLocal(now);
 
         const todayTotal = allPayments
-          .filter(p => new Date(p.paymentDate).toLocaleDateString() === todayStr)
+          .filter(p => formatDateLocal(p.paymentDate) === todayStr)
           .reduce((sum, p) => sum + p.amount, 0);
 
         const monthTotal = allPayments
@@ -103,6 +105,7 @@ const Fees = () => {
         nextDueDate: studentInfo.dueDate,
         paymentDate: p.paymentDate,
         paymentMethod: p.paymentMethod,
+        utrNumber: p.utrNumber,
         remarks: p.remarks || `Payment via ${p.paymentMethod}`,
         installment: p.remarks
       });
@@ -179,11 +182,12 @@ const Fees = () => {
                   <td>{p.studentId?.name || 'N/A'}</td>
                   <td>{p.courseId?.name || 'N/A'}</td>
                   <td style={{fontWeight: 600}}>₹{p.amount.toLocaleString()}</td>
-                  <td>{new Date(p.paymentDate).toLocaleDateString()}</td>
+                  <td>{(() => { const d = new Date(p.paymentDate); return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; })()}</td>
                   <td>
                     <span style={{backgroundColor: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem'}}>
                       {p.paymentMethod}
                     </span>
+                    {p.utrNumber && <div style={{fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px'}}>ID: {p.utrNumber}</div>}
                   </td>
                   <td>
                     <button onClick={() => handleDownload(p)} className="btn" style={{padding: '0.4rem', backgroundColor: 'var(--primary-light)', color: 'var(--accent)'}}>
@@ -216,7 +220,7 @@ const Fees = () => {
                   <td>{d.courses[0].courseName}</td>
                   <td>
                     <span style={{color: 'var(--error)', fontWeight: 600}}>
-                      {d.dueDate ? new Date(d.dueDate).toLocaleDateString() : 'Not Set'}
+                      {d.dueDate ? (() => { const d = new Date(d.dueDate); return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; })() : 'Not Set'}
                     </span>
                   </td>
                   <td style={{fontWeight: 700, color: 'var(--accent)'}}>₹{d.nextEmi.toLocaleString()}</td>

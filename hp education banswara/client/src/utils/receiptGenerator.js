@@ -96,6 +96,11 @@ export const generateReceipt = (data) => {
     doc.text(`${data.paymentMethod || 'N/A'}`, 145, startY + 54, { maxWidth: 50 });
     doc.setFont("helvetica", "normal");
     doc.line(145, startY + 55, 195, startY + 55);
+
+    if (data.utrNumber) {
+      doc.setFontSize(8);
+      doc.text(`UTR/ID: ${data.utrNumber}`, 145, startY + 58);
+    }
     
     // Table Data
     const payments = Array.isArray(data.allPayments) ? data.allPayments : [];
@@ -145,23 +150,23 @@ export const generateReceipt = (data) => {
       columnStyles: { 0: { cellWidth: 12, halign: 'center' }, 1: { cellWidth: 130 }, 2: { cellWidth: 43, halign: 'right', fontStyle: 'bold' } },
       margin: { left: 10, right: 10 },
       didParseCell: (cellData) => {
-        const summaryRowsCount = data.nextDueDate ? 4 : 3;
-        const totalCourseFeeIndex = historyData.length - summaryRowsCount;
-        
-        if (cellData.row.index >= historyData.length - summaryRowsCount) {
+        // Highlight TOTAL COURSE FEE row
+        if (cellData.row.raw && cellData.row.raw[1] === 'TOTAL COURSE FEE') {
+          cellData.cell.styles.fillColor = redColor;
+          cellData.cell.styles.textColor = [255, 255, 255];
           cellData.cell.styles.fontStyle = 'bold';
-          
-          // Highlight TOTAL COURSE FEE row
-          if (cellData.row.index === totalCourseFeeIndex) {
-            cellData.cell.styles.fillColor = redColor;
-            cellData.cell.styles.textColor = [255, 255, 255];
-          }
-          
-          // Highlight REMAINING BALANCE row (usually length - 2)
-          if (cellData.row.index === historyData.length - 2) {
-             // Keep it bold, maybe slightly different color if not already red
-             cellData.cell.styles.textColor = redColor;
-          }
+        }
+        
+        // Highlight REMAINING BALANCE row
+        if (cellData.row.raw && cellData.row.raw[1] === 'REMAINING BALANCE') {
+           cellData.cell.styles.textColor = redColor;
+           cellData.cell.styles.fontStyle = 'bold';
+        }
+
+        // Bold for all summary rows
+        const summaryLabels = ['TOTAL COURSE FEE', 'TOTAL PAID TILL DATE', 'REMAINING BALANCE', 'NEXT DUE DATE'];
+        if (cellData.row.raw && summaryLabels.includes(cellData.row.raw[1])) {
+          cellData.cell.styles.fontStyle = 'bold';
         }
       }
     });
@@ -178,9 +183,21 @@ export const generateReceipt = (data) => {
     doc.text("1. Fees once paid will not be refunded under any circumstances. 2. Fees must be deposited by the scheduled date.", 15, finalY + 12);
     doc.text("3. Admission may be cancelled if fees are not deposited within 10 days after the due date.", 15, finalY + 16);
     
-    // Sign
+    // Sign & Seal
+    // Sign text (moved up to stay within box)
     doc.setFontSize(10);
-    doc.text("Autho. Sign.", 165, finalY + 18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 0, 0);
+    doc.text("Autho. Sign.", 172, finalY + 12, { align: 'center' });
+
+    // Official Seal (moved up to stay within box)
+    try {
+       const sealImg = new Image();
+       sealImg.src = '/hp-seal.png';
+       doc.addImage(sealImg, 'PNG', 145, finalY - 15, 50, 50);
+    } catch (e) {
+       console.log("Seal load error:", e);
+    }
   };
 
   // Draw only one receipt at the top

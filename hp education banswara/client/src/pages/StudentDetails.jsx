@@ -64,6 +64,7 @@ const StudentDetails = () => {
         nextDueDate: course?.nextDueDate,
         paymentDate: t.paymentDate,
         paymentMethod: t.paymentMethod,
+        utrNumber: t.utrNumber,
         remarks: t.remarks || `Payment via ${t.paymentMethod}`,
         installment: t.remarks
       });
@@ -83,7 +84,7 @@ const StudentDetails = () => {
           </button>
           <div>
             <h1 style={{fontSize: '1.75rem', fontWeight: 800}}>{student.name}</h1>
-            <p style={{color: 'var(--text-muted)'}}>Student ID: {student.studentId} | Joined: {new Date(student.createdAt).toLocaleDateString()}</p>
+            <p style={{color: 'var(--text-muted)'}}>Student ID: {student.studentId} | Joined: {(() => { const d = new Date(student.createdAt); return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; })()}</p>
           </div>
         </div>
         <div style={{display: 'flex', gap: '1rem'}}>
@@ -194,14 +195,32 @@ const StudentDetails = () => {
                   <div>
                     <label style={{fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block'}}>Approx. EMI</label>
                     <span style={{fontWeight: 700}}>
-                      ₹{Math.ceil(balance / (course?.installmentsCount || 1)).toLocaleString()}
+                      ₹{(() => {
+                        const instCount = course?.installmentsCount || 1;
+                        const paidEMIsCount = Math.max(0, transactions.length - 1);
+                        const remainingInstCount = Math.max(1, instCount - paidEMIsCount);
+                        return Math.ceil(balance / remainingInstCount).toLocaleString();
+                      })()}
                     </span>
                   </div>
                   <div>
                     <label style={{fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block'}}>Next Due Date</label>
-                    <span style={{fontWeight: 700, color: 'var(--error)'}}>
-                      <Calendar size={14} style={{marginRight: '4px'}} />
-                      {course?.nextDueDate ? new Date(course.nextDueDate).toLocaleDateString() : 'Not Set'}
+                    <span style={{fontWeight: 700, color: balance > 0 ? 'var(--error)' : 'var(--success)'}}>
+                      {balance > 0 ? (
+                        <>
+                          <Calendar size={14} style={{marginRight: '4px'}} />
+                          {(() => {
+                            const baseDateStr = course?.nextDueDate || student.createdAt;
+                            if (!baseDateStr) return 'Not Set';
+                            const d = new Date(baseDateStr);
+                            if (!course?.nextDueDate) {
+                              const paidEMIsCount = Math.max(0, transactions.length - 1);
+                              d.setMonth(d.getMonth() + paidEMIsCount + 1);
+                            }
+                            return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                          })()}
+                        </>
+                      ) : 'FEES COMPLETED'}
                     </span>
                   </div>
                 </>
@@ -231,8 +250,11 @@ const StudentDetails = () => {
                   {transactions.length > 0 ? transactions.map(t => (
                     <tr key={t._id} style={{borderBottom: '1px solid var(--border)'}}>
                       <td style={{padding: '1rem', fontWeight: 600}}>{t.receiptId}</td>
-                      <td style={{padding: '1rem'}}>{new Date(t.paymentDate).toLocaleDateString()}</td>
-                      <td style={{padding: '1rem'}}>{t.paymentMethod}</td>
+                      <td style={{padding: '1rem'}}>{(() => { const d = new Date(t.paymentDate); return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; })()}</td>
+                      <td style={{padding: '1rem'}}>
+                        {t.paymentMethod}
+                        {t.utrNumber && <div style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>ID: {t.utrNumber}</div>}
+                      </td>
                       <td style={{padding: '1rem', fontWeight: 700, color: 'var(--success)'}}>₹{t.amount.toLocaleString()}</td>
                       <td style={{padding: '1rem'}}>
                         <button onClick={() => handleDownload(t)} className="btn" style={{padding: '0.4rem', backgroundColor: 'var(--primary-light)', color: 'var(--accent)'}}>
@@ -260,7 +282,9 @@ const StudentDetails = () => {
               {(() => {
                 const plan = [];
                 const instCount = course?.installmentsCount || 1;
-                const emi = Math.ceil(balance / (instCount || 1));
+                const paidEMIsCount = Math.max(0, transactions.length - 1);
+                const remainingInstCount = Math.max(1, instCount - paidEMIsCount);
+                const emi = balance > 0 ? Math.ceil(balance / remainingInstCount) : 0;
                 
                 // Show paid first (Downpayment)
                 plan.push({ 
@@ -271,13 +295,38 @@ const StudentDetails = () => {
                 });
 
                 // Show future installments
+                let runningBalance = balance;
                 for (let i = 1; i <= instCount; i++) {
-                  const isPaid = transactions.length > i; // Simple logic: if more transactions exist, this installment is paid
+                  const isPaid = transactions.length > i;
+                  const isLastPending = !isPaid && (i === instCount || (i < instCount && transactions.length > (i + 1) === false)); 
+                  // Wait, simpler: if it's the last one in the loop and it's pending.
+                  
+                  let displayAmount = emi;
+                  if (isPaid) {
+                    displayAmount = transactions[transactions.length - 1 - i]?.amount || emi;
+                  } else {
+                    // If it's the last installment in the plan, use the remaining running balance
+                    if (i === instCount) {
+                      displayAmount = runningBalance;
+                    } else {
+                      displayAmount = emi;
+                      runningBalance -= emi;
+                    }
+                  }
+
                   plan.push({
                     label: `Installment #${i}`,
                     status: isPaid ? 'PAID' : 'PENDING',
-                    amount: isPaid ? (transactions[transactions.length - 1 - i]?.amount || emi) : emi,
-                    date: isPaid ? transactions[transactions.length - 1 - i]?.paymentDate : (i === 1 ? course?.nextDueDate : null)
+                    amount: displayAmount,
+                    date: isPaid ? transactions[transactions.length - 1 - i]?.paymentDate : (() => {
+                      // Original fixed schedule logic: EMI #i is always (base + i) months
+                      const baseDateStr = course?.nextDueDate || student.createdAt;
+                      if (!baseDateStr) return null;
+                      const baseDate = new Date(baseDateStr);
+                      const offset = course?.nextDueDate ? (i - 1) : i;
+                      baseDate.setMonth(baseDate.getMonth() + offset);
+                      return baseDate;
+                    })()
                   });
                 }
 
@@ -294,7 +343,10 @@ const StudentDetails = () => {
                     <div>
                       <div style={{fontWeight: 700}}>{item.label}</div>
                       <div style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>
-                        {item.date ? new Date(item.date).toLocaleDateString() : 'Future Date'}
+                        {item.date ? (() => {
+                          const d = new Date(item.date);
+                          return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                        })() : 'Future Date'}
                       </div>
                     </div>
                     <div style={{textAlign: 'right'}}>

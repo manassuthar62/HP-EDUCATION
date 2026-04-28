@@ -16,6 +16,8 @@ const RecordPayment = () => {
     utrNumber: '',
     remarks: 'Installment Payment'
   });
+  const [isLastInstallment, setIsLastInstallment] = useState(false);
+  const [currentBalance, setCurrentBalance] = useState(0);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -50,17 +52,25 @@ const RecordPayment = () => {
         // Calculate EMI: (Total Fee - Initial Payment) / Installments
         // Or simply: Balance / Remaining Installments?
         // Let's use Balance / installmentsCount for consistency with StudentDetails
-        const calculatedEMI = balance > 0 ? Math.ceil(balance / instCount) : '';
+        // Check if this is the last installment
+        // Total expected = 1 (Downpayment) + instCount (EMIs)
+        // If payments.length >= instCount, this is the final EMI collection
+        const isFinal = payments.length >= instCount;
+        setIsLastInstallment(isFinal);
+        setCurrentBalance(balance);
+
+        const calculatedEMI = balance > 0 ? (isFinal ? balance : Math.ceil(balance / (instCount - payments.length + 1))) : '';
 
         setFormData({
           ...formData,
           studentId: id,
           courseId: course.courseId._id,
           amount: calculatedEMI.toString(),
-          remarks: `Installment Payment`
+          remarks: isFinal ? `Final Installment Payment` : `Installment Payment`
         });
       } catch (err) {
         console.error('Error auto-calculating EMI:', err);
+        setIsLastInstallment(false);
         setFormData({
           ...formData,
           studentId: id,
@@ -69,6 +79,7 @@ const RecordPayment = () => {
         });
       }
     } else {
+      setIsLastInstallment(false);
       setFormData({ ...formData, studentId: id, courseId: '', amount: '' });
     }
   };
@@ -149,8 +160,17 @@ const RecordPayment = () => {
             <div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                 <div style={inputGroupStyle}>
-                  <label style={labelStyle}>Amount Paid (₹)</label>
-                  <input style={inputStyle} type="number" placeholder="0.00" required value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} />
+                  <label style={labelStyle}>Amount Paid (₹) {isLastInstallment && <span style={{color: 'var(--error)', marginLeft: '10px', fontSize: '0.7rem'}}>FINAL PAYMENT (LOCKED)</span>}</label>
+                  <input 
+                    style={{...inputStyle, backgroundColor: isLastInstallment ? 'rgba(0,0,0,0.05)' : 'var(--bg-card)'}} 
+                    type="number" 
+                    placeholder="0.00" 
+                    required 
+                    readOnly={isLastInstallment}
+                    value={formData.amount} 
+                    onChange={e => setFormData({...formData, amount: e.target.value})} 
+                  />
+                  {isLastInstallment && <p style={{fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '5px'}}>This is the final payment to clear the balance of ₹{currentBalance.toLocaleString()}.</p>}
                 </div>
                 <div style={inputGroupStyle}>
                   <label style={labelStyle}><CreditCard size={18} /> Payment Method</label>

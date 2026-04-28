@@ -98,7 +98,7 @@ const Students = () => {
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
       link.setAttribute('href', url);
-      link.setAttribute('download', `Students_Report_${selectedCourse ? 'Course_Wise' : 'All'}_${new Date().toLocaleDateString()}.csv`);
+      link.setAttribute('download', `Students_Report_${selectedCourse ? 'Course_Wise' : 'All'}_${(() => { const d = new Date(); return `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`; })()}.csv`);
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();

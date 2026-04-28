@@ -194,11 +194,12 @@ const Dashboard = () => {
                   <td>{tx.studentId?.name || 'N/A'}</td>
                   <td>{tx.courseId?.name || 'N/A'}</td>
                   <td style={{fontWeight: 600}}>₹{tx.amount.toLocaleString()}</td>
-                  <td>{tx.paymentDate ? new Date(tx.paymentDate).toLocaleDateString() : 'N/A'}</td>
+                  <td>{tx.paymentDate ? (() => { const d = new Date(tx.paymentDate); return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; })() : 'N/A'}</td>
                   <td>
                     <span style={{backgroundColor: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem'}}>
                       {tx.status || 'Completed'}
                     </span>
+                    {tx.utrNumber && <div style={{fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px'}}>ID: {tx.utrNumber}</div>}
                   </td>
                 </tr>
               ))
