@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Save, BookOpen, Clock, CreditCard, FileText } from 'lucide-react';
+import { ArrowLeft, Save, BookOpen, Clock, CreditCard, FileText, Trash2 } from 'lucide-react';
 import API_URL from '../config';
+import CustomAlert from '../components/CustomAlert';
 
 const EditCourse = () => {
   const { id } = useParams();
@@ -13,6 +14,22 @@ const EditCourse = () => {
     baseFee: '',
     description: ''
   });
+
+  const [alertConfig, setAlertConfig] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  const showAlert = (type, title, message, onConfirm = null) => {
+    setAlertConfig({ isOpen: true, type, title, message, onConfirm });
+  };
+
+  const closeAlert = () => {
+    setAlertConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -27,13 +44,11 @@ const EditCourse = () => {
             description: data.description || ''
           });
         } else {
-          console.error('Course fetch failed:', data.message);
-          alert('Error: Could not load course data.');
+          showAlert('error', 'Fetch Failed', data.message || 'Could not load course data.');
         }
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching course:', err);
-        alert('Connection Error: Make sure server is running.');
+        showAlert('error', 'Connection Error', 'Make sure server is running.');
         setLoading(false);
       }
     };
@@ -50,15 +65,32 @@ const EditCourse = () => {
       });
 
       if (response.ok) {
-        alert('✅ Course Updated Successfully!');
-        navigate('/courses');
+        showAlert('success', 'Updated!', 'Course Updated Successfully!', () => navigate('/courses'));
       } else {
-        alert('❌ Error updating course');
+        showAlert('error', 'Error', 'Error updating course');
       }
     } catch (err) {
       console.error('Error saving course:', err);
-      alert('❌ Connection Error');
+      showAlert('error', 'Connection Error', 'Something went wrong.');
     }
+  };
+
+  const handleDeleteCourse = async () => {
+    showAlert('confirm', 'Are you sure?', 'This action cannot be undone. All data for this course will be lost.', async () => {
+      try {
+        const response = await fetch(`${API_URL}/academic/courses/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        
+        if (response.ok) {
+          showAlert('success', 'Deleted!', 'Course Deleted Successfully!', () => navigate('/courses'));
+        } else {
+          showAlert('error', 'Delete Failed', result.message || 'Could not delete course');
+        }
+      } catch (err) {
+        console.error('Error deleting course:', err);
+        showAlert('error', 'Connection Error', 'Could not connect to server.');
+      }
+    });
   };
 
   const inputGroupStyle = { marginBottom: '1.5rem' };
@@ -69,6 +101,11 @@ const EditCourse = () => {
 
   return (
     <div className="animate-fade-in">
+      <CustomAlert 
+        {...alertConfig} 
+        onClose={closeAlert} 
+      />
+
       <div className="header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <button onClick={() => navigate('/courses')} className="btn" style={{ padding: '0.6rem', backgroundColor: 'var(--primary-light)', borderRadius: '0.75rem' }}>
@@ -126,7 +163,10 @@ const EditCourse = () => {
             />
           </div>
 
-          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button type="button" onClick={handleDeleteCourse} className="btn" style={{ padding: '0.8rem 1.5rem', color: 'var(--danger)', border: '1px solid var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Trash2 size={18} /> Delete Course
+            </button>
             <button type="submit" className="btn btn-primary" style={{ padding: '1rem 3rem', fontSize: '1.1rem' }}>
               <Save size={20} /> Update Course
             </button>

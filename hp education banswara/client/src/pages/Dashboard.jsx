@@ -38,12 +38,14 @@ const Dashboard = () => {
     { name: 'Pending', value: stats.pendingFees, color: '#ef4444' }
   ];
 
-  const monthlyData = stats.monthlyCollection || [
-    { name: 'Jan', collected: 0, pending: 0 },
-    { name: 'Feb', collected: 0, pending: 0 },
-    { name: 'Mar', collected: 0, pending: 0 },
-    { name: 'Apr', collected: 0, pending: 0 },
-  ];
+  const monthlyData = (stats.monthlyCollection && stats.monthlyCollection.length > 0) 
+    ? stats.monthlyCollection 
+    : [
+        { name: 'Jan', collected: 0 },
+        { name: 'Feb', collected: 0 },
+        { name: 'Mar', collected: 0 },
+        { name: 'Apr', collected: 0 },
+      ];
 
   return (
     <div className="animate-fade-in">
@@ -58,37 +60,37 @@ const Dashboard = () => {
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card">
+        <div className="stat-card card-blue">
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
             <span className="stat-label">Total Students</span>
-            <Users size={20} color="var(--accent)" />
+            <Users size={24} color="white" />
           </div>
           <span className="stat-value">{stats.totalStudents}</span>
-          <span className="stat-trend trend-up"><TrendingUp size={14} /> 12% increase</span>
+          <span className="stat-trend"><TrendingUp size={14} /> 12% increase</span>
         </div>
-        <div className="stat-card">
+        <div className="stat-card card-green">
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
             <span className="stat-label">Total Collection</span>
-            <Receipt size={20} color="var(--success)" />
+            <Receipt size={24} color="white" />
           </div>
           <span className="stat-value">₹{(stats.totalCollection || 0).toLocaleString()}</span>
-          <span className="stat-trend trend-up"><TrendingUp size={14} /> 8.5% increase</span>
+          <span className="stat-trend"><TrendingUp size={14} /> 8.5% increase</span>
         </div>
-        <div className="stat-card">
+        <div className="stat-card card-red">
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
             <span className="stat-label">Pending Fees</span>
-            <Clock size={20} color="var(--error)" />
+            <Clock size={24} color="white" />
           </div>
           <span className="stat-value">₹{(stats.pendingFees || 0).toLocaleString()}</span>
-          <span className="stat-trend trend-down"><TrendingDown size={14} /> 3.2% decrease</span>
+          <span className="stat-trend"><TrendingDown size={14} /> 3.2% decrease</span>
         </div>
-        <div className="stat-card">
+        <div className="stat-card card-purple">
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
             <span className="stat-label">Active Batches</span>
-            <Layers size={20} color="var(--warning)" />
+            <Layers size={24} color="white" />
           </div>
           <span className="stat-value">{stats.totalBatches}</span>
-          <span className="stat-trend">Last updated 2h ago</span>
+          <span className="stat-trend">Manage Batches & Courses</span>
         </div>
       </div>
 

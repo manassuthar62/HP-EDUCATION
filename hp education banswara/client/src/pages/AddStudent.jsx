@@ -11,7 +11,8 @@ const AddStudent = () => {
     studentId: 'HP-' + Math.floor(Math.random() * 10000), // Auto-generate random ID
     name: '', fatherName: '', contact: '', alternateContact: '', email: '', address: '',
     courseName: '', batchName: '', rollNo: '',
-    totalFee: '', discount: '0', paymentPlan: 'Installments', paidAmount: '0', installmentsCount: '1', nextDueDate: ''
+    totalFee: '', discount: '0', paymentPlan: 'Installments', paidAmount: '0', installmentsCount: '1', nextDueDate: '',
+    paymentMethod: 'Cash', transactionId: ''
   });
 
   useEffect(() => {
@@ -96,7 +97,8 @@ const AddStudent = () => {
                 studentId: result._id,
                 courseId: selectedCourse._id,
                 amount: actualPaid,
-                paymentMethod: 'Cash',
+                paymentMethod: formData.paymentMethod,
+                transactionId: formData.transactionId,
                 remarks: 'Admission Down Payment'
               })
             });
@@ -271,17 +273,43 @@ const AddStudent = () => {
               </div>
 
               {formData.paymentPlan === 'Installments' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div style={inputGroupStyle}>
-                    <label style={labelStyle}>Down Payment (₹)</label>
-                    <input style={inputStyle} type="number" placeholder="Amount paid now" value={formData.paidAmount} onChange={e => setFormData({...formData, paidAmount: e.target.value})} />
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div style={inputGroupStyle}>
+                      <label style={labelStyle}>Down Payment (₹)</label>
+                      <input style={inputStyle} type="number" placeholder="Amount paid now" value={formData.paidAmount} onChange={e => setFormData({...formData, paidAmount: e.target.value})} />
+                    </div>
+                    <div style={inputGroupStyle}>
+                      <label style={labelStyle}><Calendar size={16} /> Next Due Date</label>
+                      <input style={inputStyle} type="date" required value={formData.nextDueDate} onChange={e => setFormData({...formData, nextDueDate: e.target.value})} />
+                    </div>
                   </div>
-                  <div style={inputGroupStyle}>
-                    <label style={labelStyle}><Calendar size={16} /> Next Due Date</label>
-                    <input style={inputStyle} type="date" required value={formData.nextDueDate} onChange={e => setFormData({...formData, nextDueDate: e.target.value})} />
-                  </div>
-                </div>
+                </>
               )}
+
+              <div style={inputGroupStyle}>
+                <label style={labelStyle}><CreditCard size={18} /> Payment Method</label>
+                <div style={{ display: 'grid', gridTemplateColumns: formData.paymentMethod !== 'Cash' ? '1fr 1fr' : '1fr', gap: '1rem' }}>
+                  <select 
+                    style={inputStyle} 
+                    value={formData.paymentMethod} 
+                    onChange={e => setFormData({...formData, paymentMethod: e.target.value})}
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="Online">Online / UPI</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                  </select>
+                  {formData.paymentMethod !== 'Cash' && (
+                    <input 
+                      style={inputStyle} 
+                      type="text" 
+                      placeholder="Transaction ID / UTR" 
+                      value={formData.transactionId} 
+                      onChange={e => setFormData({...formData, transactionId: e.target.value})} 
+                    />
+                  )}
+                </div>
+              </div>
 
               {formData.paymentPlan === 'Installments' && Number(formData.installmentsCount) > 1 && (
                 <div style={{ marginBottom: '1.5rem', padding: '1rem', backgroundColor: 'var(--primary-light)', borderRadius: '0.75rem', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

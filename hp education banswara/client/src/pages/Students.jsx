@@ -112,11 +112,14 @@ const Students = () => {
   };
 
   const filteredStudents = students.filter(student => {
+    // If no course is selected, don't show any students
+    if (!selectedCourse) return false;
+
     const matchesSearch = student.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          student.studentId?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const studentCourseIds = (student.courses || []).map(c => c.courseId?._id || c.courseId);
-    const matchesCourse = !selectedCourse || studentCourseIds.includes(selectedCourse);
+    const matchesCourse = studentCourseIds.includes(selectedCourse);
     
     return matchesSearch && matchesCourse;
   });
@@ -166,7 +169,7 @@ const Students = () => {
               minWidth: '200px'
             }}
           >
-            <option value="">All Courses</option>
+            <option value="">--- Select Course ---</option>
             {courses.map(course => (
               <option key={course._id} value={course._id}>{course.name}</option>
             ))}
@@ -190,60 +193,70 @@ const Students = () => {
             </tr>
           </thead>
           <tbody>
-            {Array.isArray(filteredStudents) && filteredStudents.map(student => (
-              <tr key={student._id}>
-                <td>
-                  <div style={{fontWeight: 600}}>{student.name}</div>
-                  <div style={{fontSize: '0.75rem', color: 'var(--text-muted)'}}>ID: {student.studentId}</div>
-                </td>
-                <td>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem'}}>
-                    <Mail size={14} color="var(--text-muted)" /> {student.email || 'N/A'}
-                  </div>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem'}}>
-                    <Phone size={14} color="var(--text-muted)" /> {student.contact}
-                  </div>
-                </td>
-                <td>
-                  <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.25rem'}}>
-                    {(student.courses || []).map((c, i) => (
-                      <span key={i} style={{backgroundColor: 'rgba(14, 165, 233, 0.1)', color: 'var(--accent)', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem'}}>
-                        {c.courseName} ({c.batchName})
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td>
-                  <span style={{
-                    color: student.status === 'Active' ? 'var(--success)' : 'var(--text-muted)',
-                    backgroundColor: student.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(148, 163, 184, 0.1)',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.75rem'
-                  }}>
-                    {student.status}
-                  </span>
-                </td>
-                <td>
-                  <div style={{display: 'flex', gap: '0.5rem'}}>
-                    <button 
-                      onClick={() => navigate(`/student-details/${student._id}`)}
-                      title="View Details"
-                      style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', backgroundColor: 'var(--primary-light)', padding: '0.4rem', borderRadius: '0.5rem'}}
-                    >
-                      <Eye size={18} />
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(student._id)}
-                      title="Delete Student"
-                      style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '0.4rem', borderRadius: '0.5rem'}}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
+            {filteredStudents.length > 0 ? (
+              filteredStudents.map(student => (
+                <tr key={student._id}>
+                  <td>
+                    <div style={{fontWeight: 600}}>{student.name}</div>
+                    <div style={{fontSize: '0.75rem', color: 'var(--text-muted)'}}>ID: {student.studentId}</div>
+                  </td>
+                  <td>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem'}}>
+                      <Mail size={14} color="var(--text-muted)" /> {student.email || 'N/A'}
+                    </div>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem'}}>
+                      <Phone size={14} color="var(--text-muted)" /> {student.contact}
+                    </div>
+                  </td>
+                  <td>
+                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '0.25rem'}}>
+                      {(student.courses || []).map((c, i) => (
+                        <span key={i} style={{backgroundColor: 'rgba(14, 165, 233, 0.1)', color: 'var(--accent)', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem'}}>
+                          {c.courseName} ({c.batchName})
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <span style={{
+                      color: student.status === 'Active' ? 'var(--success)' : 'var(--text-muted)',
+                      backgroundColor: student.status === 'Active' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(148, 163, 184, 0.1)',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '0.25rem',
+                      fontSize: '0.75rem'
+                    }}>
+                      {student.status}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{display: 'flex', gap: '0.5rem'}}>
+                      <button 
+                        onClick={() => navigate(`/student-details/${student._id}`)}
+                        title="View Details"
+                        style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', backgroundColor: 'var(--primary-light)', padding: '0.4rem', borderRadius: '0.5rem'}}
+                      >
+                        <Eye size={18} />
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(student._id)}
+                        title="Delete Student"
+                        style={{background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: '0.4rem', borderRadius: '0.5rem'}}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                  {selectedCourse 
+                    ? 'No students found in this course.' 
+                    : 'Please select a course from the dropdown above to view students.'}
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

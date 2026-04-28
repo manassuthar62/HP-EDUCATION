@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Course, Batch } = require('../models/Academic');
+const Student = require('../models/Student');
 
 // Course Routes
 router.get('/courses', async (req, res) => {
@@ -50,6 +51,33 @@ router.post('/courses', async (req, res) => {
   }
 });
 
+router.delete('/courses/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if any student is enrolled in this course
+    const studentInCourse = await Student.findOne({ 'courses.courseId': id });
+    if (studentInCourse) {
+      return res.status(400).json({
+        message: 'Cannot delete course: Students are still enrolled in this course. Please remove students first.'
+      });
+    }
+
+    // Optionally check if batches exist
+    const batchesExist = await Batch.findOne({ courseId: id });
+    if (batchesExist) {
+       return res.status(400).json({
+         message: 'Cannot delete course: Batches are still linked to this course. Please delete batches first.'
+       });
+    }
+
+    await Course.findByIdAndDelete(id);
+    res.json({ message: 'Course deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Batch Routes
 router.get('/batches/:courseId', async (req, res) => {
   try {
@@ -81,6 +109,34 @@ router.post('/batches', async (req, res) => {
     res.status(201).json(newBatch);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+router.put('/batches/:id', async (req, res) => {
+  try {
+    const updatedBatch = await Batch.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedBatch);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+router.delete('/batches/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if any student is assigned to this batch
+    const studentInBatch = await Student.findOne({ 'courses.batchId': id });
+    if (studentInBatch) {
+      return res.status(400).json({ 
+        message: 'Cannot delete batch: Students are still assigned to this batch. Please transfer or delete students first.' 
+      });
+    }
+
+    await Batch.findByIdAndDelete(id);
+    res.json({ message: 'Batch deleted' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

@@ -92,6 +92,30 @@ router.get('/stats', async (req, res) => {
       .filter(tx => tx.studentId !== null)
       .slice(0, 5);
 
+    // Calculate Monthly Collection for Chart (Last 6 Months)
+    const monthlyCollection = [];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const m = d.getMonth();
+      const y = d.getFullYear();
+      
+      const start = new Date(y, m, 1);
+      const end = new Date(y, m + 1, 0, 23, 59, 59, 999);
+      
+      const monthlyTxs = validTransactions.filter(t => {
+        const pDate = new Date(t.paymentDate);
+        return pDate >= start && pDate <= end;
+      });
+      
+      monthlyCollection.push({
+        name: monthNames[m],
+        collected: monthlyTxs.reduce((sum, t) => sum + t.amount, 0)
+      });
+    }
+
     res.json({
       totalStudents,
       totalBatches,
@@ -100,6 +124,7 @@ router.get('/stats', async (req, res) => {
       totalCollectionMonth,
       pendingFees,
       recentTransactions,
+      monthlyCollection,
       upcomingFees: upcomingFees.filter(f => f !== null)
     });
   } catch (err) {

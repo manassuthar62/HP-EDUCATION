@@ -29,23 +29,24 @@ export const generateReceipt = (data) => {
     
     // Header
     doc.setTextColor(redColor[0], redColor[1], redColor[2]);
-    doc.setFontSize(26);
-    doc.setFont("helvetica", "bold");
-    doc.text("HP EDUCATION", 105, startY + 12, { align: 'center' });
+    doc.setFontSize(22);
+    doc.setFont("times", "bold");
+    doc.text("HP GROUP OF EDUCATION", 105, startY + 12, { align: 'center' });
     
     // Logo
     try {
        const img = new Image();
        img.src = '/hp logo.png';
-       doc.addImage(img, 'PNG', 15, startY + 4, 22, 22);
+       doc.addImage(img, 'PNG', 8, startY + 2, 32, 25);
     } catch (e) {
        console.log("Logo load error:", e);
     }
     
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text("Subhash Nagar, College Road, Banswara (Raj.)", 105, startY + 18, { align: 'center' });
-    doc.text("Mo. 9414401524, 9414401525", 105, startY + 23, { align: 'center' });
+    doc.text("H.O.: Subhash Nagar, Gali No. 4, College Road, Banswara (Raj.)", 105, startY + 17, { align: 'center' });
+    doc.text("C.O.: Gayatri Garden, College Road, Banswara (Raj.)", 105, startY + 21, { align: 'center' });
+    doc.text("Mo. 9414401561, 9414401524, 9414401525", 105, startY + 25, { align: 'center' });
     
     // Horizontal Line
     doc.setLineWidth(0.3);
@@ -57,19 +58,34 @@ export const generateReceipt = (data) => {
     doc.text(`S.No. ${data.receiptId || 'N/A'}`, 15, startY + 33);
     doc.text(`Date: ${new Date(data.paymentDate).toLocaleDateString()}`, 155, startY + 33);
     
-    doc.text(`Received From: ${data.studentName}`, 15, startY + 40);
+    doc.text("Received From:", 15, startY + 40);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${data.studentName}`, 45, startY + 40, { maxWidth: 150 });
+    doc.setFont("helvetica", "normal");
     doc.line(45, startY + 41, 195, startY + 41);
     
-    doc.text(`Course: ${data.courseName}`, 15, startY + 47);
+    doc.text("Course:", 15, startY + 47);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${data.courseName}`, 30, startY + 47, { maxWidth: 60 });
+    doc.setFont("helvetica", "normal");
     doc.line(30, startY + 48, 90, startY + 48);
     
-    doc.text(`Batch: ${data.batchName || 'N/A'}`, 100, startY + 47);
+    doc.text("Batch:", 100, startY + 47);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${data.batchName || 'N/A'}`, 115, startY + 47, { maxWidth: 80 });
+    doc.setFont("helvetica", "normal");
     doc.line(115, startY + 48, 195, startY + 48);
     
-    doc.text(`Mobile: ${data.studentContact}`, 15, startY + 54);
+    doc.text("Mobile:", 15, startY + 54);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${data.studentContact}`, 30, startY + 54, { maxWidth: 60 });
+    doc.setFont("helvetica", "normal");
     doc.line(30, startY + 55, 90, startY + 55);
 
-    doc.text(`Payment Mode: ${data.paymentMethod || 'N/A'}`, 115, startY + 54);
+    doc.text("Payment Mode:", 115, startY + 54);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${data.paymentMethod || 'N/A'}`, 145, startY + 54, { maxWidth: 50 });
+    doc.setFont("helvetica", "normal");
     doc.line(145, startY + 55, 195, startY + 55);
     
     // Table Data
@@ -121,9 +137,22 @@ export const generateReceipt = (data) => {
       margin: { left: 10, right: 10 },
       didParseCell: (cellData) => {
         const summaryRowsCount = data.nextDueDate ? 4 : 3;
+        const totalCourseFeeIndex = historyData.length - summaryRowsCount;
+        
         if (cellData.row.index >= historyData.length - summaryRowsCount) {
           cellData.cell.styles.fontStyle = 'bold';
-          if (cellData.row.index === historyData.length - 2) cellData.cell.styles.textColor = redColor;
+          
+          // Highlight TOTAL COURSE FEE row
+          if (cellData.row.index === totalCourseFeeIndex) {
+            cellData.cell.styles.fillColor = redColor;
+            cellData.cell.styles.textColor = [255, 255, 255];
+          }
+          
+          // Highlight REMAINING BALANCE row (usually length - 2)
+          if (cellData.row.index === historyData.length - 2) {
+             // Keep it bold, maybe slightly different color if not already red
+             cellData.cell.styles.textColor = redColor;
+          }
         }
       }
     });
@@ -136,9 +165,9 @@ export const generateReceipt = (data) => {
     // Terms
     doc.setFontSize(7);
     doc.setTextColor(redColor[0], redColor[1], redColor[2]);
-    doc.text("Nirdesh (Terms & Conditions):-", 15, finalY + 8);
-    doc.text("1. Jama ki gayi fees kisi bhi sthiti mein wapas nahi hogi.  2. Fees nirdharit tareekh tak jama karwana aniwarya hai.", 15, finalY + 12);
-    doc.text("3. Due date ke 10 din baad tak fees jama na hone par admission radd kiya ja sakta hai.", 15, finalY + 16);
+    doc.text("Terms & Conditions:-", 15, finalY + 8);
+    doc.text("1. Fees once paid will not be refunded under any circumstances. 2. Fees must be deposited by the scheduled date.", 15, finalY + 12);
+    doc.text("3. Admission may be cancelled if fees are not deposited within 10 days after the due date.", 15, finalY + 16);
     
     // Sign
     doc.setFontSize(10);

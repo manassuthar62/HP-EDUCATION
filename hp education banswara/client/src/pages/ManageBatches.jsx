@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Clock, User, Save, Trash2, BookOpen } from 'lucide-react';
 import API_URL from '../config';
+import CustomAlert from '../components/CustomAlert';
 
 const ManageBatches = () => {
   const { courseId } = useParams();
@@ -10,6 +11,23 @@ const ManageBatches = () => {
   const [batches, setBatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newBatch, setNewBatch] = useState({ name: '', time: '', faculty: '' });
+  const [editingBatchId, setEditingBatchId] = useState(null);
+
+  const [alertConfig, setAlertConfig] = useState({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: '',
+    onConfirm: null
+  });
+
+  const showAlert = (type, title, message, onConfirm = null) => {
+    setAlertConfig({ isOpen: true, type, title, message, onConfirm });
+  };
+
+  const closeAlert = () => {
+    setAlertConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   const fetchCourseDetails = async () => {
     try {
@@ -28,7 +46,6 @@ const ManageBatches = () => {
     try {
       const response = await fetch(`${API_URL}/academic/batches/${courseId}`);
       const data = await response.json();
-      console.log('Fetched Batches:', data);
       setBatches(Array.isArray(data) ? data : []);
       setLoading(false);
     } catch (err) {
@@ -44,9 +61,13 @@ const ManageBatches = () => {
   const handleAddBatch = async (e) => {
     e.preventDefault();
     try {
-      console.log('Sending Batch Data:', { ...newBatch, courseId });
-      const response = await fetch(`${API_URL}/academic/batches`, {
-        method: 'POST',
+      const url = editingBatchId 
+        ? `${API_URL}/academic/batches/${editingBatchId}` 
+        : `${API_URL}/academic/batches`;
+      const method = editingBatchId ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...newBatch, courseId })
       });
@@ -54,16 +75,45 @@ const ManageBatches = () => {
       const result = await response.json();
       
       if (response.ok) {
-        alert('✅ Batch Saved Successfully!');
+        showAlert('success', 'Success!', editingBatchId ? 'Batch Updated Successfully!' : 'Batch Saved Successfully!');
         setNewBatch({ name: '', time: '', faculty: '' });
-        fetchBatchDetails(); // Just refresh batches
+        setEditingBatchId(null);
+        fetchBatchDetails();
       } else {
-        alert('❌ Error: ' + (result.message || 'Unknown error'));
+        showAlert('error', 'Error', result.message || 'Something went wrong');
       }
     } catch (err) {
-      console.error('Error adding batch:', err);
-      alert('❌ Connection Error: Backend is not responding');
+      console.error('Error saving batch:', err);
+      showAlert('error', 'Connection Error', 'Backend is not responding');
     }
+  };
+
+  const handleDeleteBatch = async (id) => {
+    showAlert('confirm', 'Are you sure?', 'Do you really want to delete this batch?', async () => {
+      try {
+        const response = await fetch(`${API_URL}/academic/batches/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (response.ok) {
+          showAlert('success', 'Deleted!', 'Batch Deleted Successfully!');
+          fetchBatchDetails();
+        } else {
+          showAlert('error', 'Delete Failed', result.message || 'Could not delete batch');
+        }
+      } catch (err) {
+        console.error('Error deleting batch:', err);
+        showAlert('error', 'Error', 'Something went wrong');
+      }
+    });
+  };
+
+  const handleEditClick = (batch) => {
+    setEditingBatchId(batch._id);
+    setNewBatch({ name: batch.name, time: batch.time, faculty: batch.faculty });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingBatchId(null);
+    setNewBatch({ name: '', time: '', faculty: '' });
   };
 
   if (loading) return <div style={{padding: '2rem', textAlign: 'center'}}>Loading Batches...</div>;
@@ -74,6 +124,11 @@ const ManageBatches = () => {
 
   return (
     <div className="animate-fade-in">
+      <CustomAlert 
+        {...alertConfig} 
+        onClose={closeAlert} 
+      />
+
       <div className="header" style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
           <button onClick={() => navigate('/courses')} className="btn" style={{ padding: '0.6rem', backgroundColor: 'var(--primary-light)', borderRadius: '0.75rem' }}>
@@ -108,6 +163,14 @@ const ManageBatches = () => {
                         <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><User size={14} /> {batch.faculty || 'No Faculty'}</span>
                       </div>
                     </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => handleEditClick(batch)} className="btn" style={{ padding: '0.5rem', color: 'var(--accent)', backgroundColor: 'var(--bg-card)' }}>
+                        <BookOpen size={18} />
+                      </button>
+                      <button onClick={() => handleDeleteBatch(batch._id)} className="btn" style={{ padding: '0.5rem', color: 'var(--danger)', backgroundColor: 'var(--bg-card)' }}>
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -115,11 +178,12 @@ const ManageBatches = () => {
           </div>
         </div>
 
-        {/* Add New Batch Form */}
+        {/* Add/Edit Batch Form */}
         <div>
           <div className="stat-card" style={{ padding: '2rem', position: 'sticky', top: '2rem' }}>
             <h3 style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Plus size={20} color="var(--success)" /> Add New Batch
+              {editingBatchId ? <BookOpen size={20} color="var(--accent)" /> : <Plus size={20} color="var(--success)" />} 
+              {editingBatchId ? 'Edit Batch' : 'Add New Batch'}
             </h3>
             <form onSubmit={handleAddBatch}>
               <div style={{ marginBottom: '1.25rem' }}>
@@ -134,9 +198,16 @@ const ManageBatches = () => {
                 <label style={labelStyle}>Faculty / Teacher</label>
                 <input style={inputStyle} type="text" placeholder="Assigned Teacher" value={newBatch.faculty} onChange={e => setNewBatch({...newBatch, faculty: e.target.value})} />
               </div>
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', borderRadius: '0.75rem' }}>
-                <Save size={18} /> Save & Add Batch
-              </button>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button type="submit" className="btn btn-primary" style={{ flex: 2, padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', borderRadius: '0.75rem' }}>
+                  <Save size={18} /> {editingBatchId ? 'Update Batch' : 'Save & Add Batch'}
+                </button>
+                {editingBatchId && (
+                  <button type="button" onClick={handleCancelEdit} className="btn" style={{ flex: 1, backgroundColor: 'var(--border)', color: 'var(--text-main)', borderRadius: '0.75rem' }}>
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </div>
