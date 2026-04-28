@@ -20,37 +20,44 @@ const Fees = () => {
         const allPayments = Array.isArray(feesData) ? feesData : [];
         setPayments(allPayments);
 
-        // Calculate Stats locally for real-time accuracy
+        // Calculate Stats locally
         const now = new Date();
         const formatDateLocal = (date) => {
+          if (!date) return "";
           const d = new Date(date);
+          if (isNaN(d.getTime())) return "";
           return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
         };
         const todayStr = formatDateLocal(now);
 
         const todayTotal = allPayments
-          .filter(p => formatDateLocal(p.paymentDate) === todayStr)
+          .filter(p => p.paymentDate && formatDateLocal(p.paymentDate) === todayStr)
           .reduce((sum, p) => sum + p.amount, 0);
 
         const monthTotal = allPayments
           .filter(p => {
+            if (!p.paymentDate) return false;
             const d = new Date(p.paymentDate);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
           })
           .reduce((sum, p) => sum + p.amount, 0);
 
         const studentsRes = await fetch(`${API_URL}/students`);
         const studentsData = await studentsRes.json();
+        const allStudents = Array.isArray(studentsData) ? studentsData : [];
+
         // Filter students with pending balance
-        const pendingDues = studentsData.filter(s => {
+        const pendingDues = allStudents.filter(s => {
           const course = s.courses && s.courses[0];
           if (!course) return false;
-          const totalPaid = allPayments.filter(p => p.studentId?._id === s._id).reduce((sum, p) => sum + p.amount, 0);
+          const studentPayments = allPayments.filter(p => (p.studentId?._id || p.studentId) === s._id);
+          const totalPaid = studentPayments.reduce((sum, p) => sum + p.amount, 0);
           return (course.finalFee - totalPaid) > 0;
         }).map(s => {
           const course = s.courses[0];
-          const totalPaid = allPayments.filter(p => p.studentId?._id === s._id).reduce((sum, p) => sum + p.amount, 0);
-          const balance = course.finalFee - totalPaid;
+          const studentPayments = allPayments.filter(p => (p.studentId?._id || p.studentId) === s._id);
+          const totalPaid = studentPayments.reduce((sum, p) => sum + p.amount, 0);
+          const balance = (course.finalFee || 0) - totalPaid;
           const emi = course.paymentPlan === 'Installments' ? Math.ceil(balance / (course.installmentsCount || 1)) : balance;
           return {
             ...s,
@@ -61,13 +68,19 @@ const Fees = () => {
         });
         setDues(pendingDues);
         
-        const statsRes = await fetch(`${API_URL}/dashboard/stats`);
-        const statsData = await statsRes.json();
-        setStats({
-          today: todayTotal,
-          month: monthTotal,
-          pending: statsData.pendingFees || 0
-        });
+        try {
+          const statsRes = await fetch(`${API_URL}/dashboard/stats`);
+          const statsData = await statsRes.json();
+          setStats({
+            today: todayTotal,
+            month: monthTotal,
+            pending: statsData.pendingFees || 0
+          });
+        } catch (e) {
+          console.error("Dashboard stats error:", e);
+          setStats(prev => ({ ...prev, today: todayTotal, month: monthTotal }));
+        }
+
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
