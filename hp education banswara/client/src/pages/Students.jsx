@@ -128,8 +128,15 @@ const Students = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="header">
-        <h1>Student Management</h1>
+      <div className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1>Student Management</h1>
+          {selectedCourse && (
+            <p style={{ color: 'var(--accent)', fontWeight: 600 }}>
+              Total Students in this Course: {filteredStudents.length}
+            </p>
+          )}
+        </div>
         <button className="btn btn-primary" onClick={() => navigate('/add-student')}>
           <Plus size={18} /> New Student
         </button>
@@ -185,6 +192,7 @@ const Students = () => {
         <table>
           <thead>
             <tr>
+              <th style={{ width: '60px' }}>S.N.</th>
               <th>Name</th>
               <th>Contact Info</th>
               <th>Enrolled Courses</th>
@@ -194,8 +202,9 @@ const Students = () => {
           </thead>
           <tbody>
             {filteredStudents.length > 0 ? (
-              filteredStudents.map(student => (
+              filteredStudents.map((student, index) => (
                 <tr key={student._id}>
+                  <td style={{ color: 'var(--text-muted)', fontWeight: 500 }}>{index + 1}</td>
                   <td>
                     <div style={{fontWeight: 600}}>{student.name}</div>
                     <div style={{fontSize: '0.75rem', color: 'var(--text-muted)'}}>ID: {student.studentId}</div>
@@ -250,7 +259,7 @@ const Students = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
                   {selectedCourse 
                     ? 'No students found in this course.' 
                     : 'Please select a course from the dropdown above to view students.'}
