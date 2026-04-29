@@ -12,7 +12,22 @@ const PORT = process.env.PORT || 5000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://hpeducation918_db_user:admin123@cluster0.q3ouir9.mongodb.net/hp_education?appName=Cluster0';
 
 mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB: ' + MONGODB_URI.split('@')[1])) // Safe log
+  .then(async () => {
+    console.log('Connected to MongoDB: ' + MONGODB_URI.split('@')[1]);
+    
+    // Auto-update live admin email if missing
+    try {
+      const User = require('./models/User');
+      const admin = await User.findOne({ username: 'admin' });
+      if (admin && !admin.email) {
+        admin.email = 'hpeducation918@gmail.com';
+        await admin.save();
+        console.log('✅ Live Admin Email Updated successfully.');
+      }
+    } catch (e) {
+      console.error('Error auto-updating admin:', e);
+    }
+  })
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware to check DB connection
