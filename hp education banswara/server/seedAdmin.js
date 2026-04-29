@@ -9,12 +9,15 @@ const seedAdmin = async () => {
     
     const adminExists = await User.findOne({ username: 'admin' });
     if (adminExists) {
-      console.log('Admin already exists!');
+      adminExists.email = 'hpeducation918@gmail.com';
+      await adminExists.save();
+      console.log('Admin already exists! Updated email.');
       process.exit();
     }
 
     const admin = new User({
       username: 'admin',
+      email: 'hpeducation918@gmail.com',
       password: 'admin123', // Aap isse baad mein change kar sakte hain
       role: 'admin'
     });
@@ -22,6 +25,7 @@ const seedAdmin = async () => {
     await admin.save();
     console.log('Admin user created successfully!');
     console.log('Username: admin');
+    console.log('Email: hpeducation918@gmail.com');
     console.log('Password: admin123');
     process.exit();
   } catch (err) {

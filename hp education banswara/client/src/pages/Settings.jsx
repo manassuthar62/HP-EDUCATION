@@ -6,9 +6,11 @@ const Settings = () => {
   const [formData, setFormData] = useState({
     oldPassword: '',
     newPassword: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    otp: ''
   });
   const [loading, setLoading] = useState(false);
+  const [showOtp, setShowOtp] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +23,7 @@ const Settings = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
       if (!user || !user.username) {
-        alert('❌ Error: User not logged in correctly. Please Logout and Login again.');
+        alert('❌ Error: User not logged in correctly.');
         return;
       }
       
@@ -30,7 +32,35 @@ const Settings = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           username: user.username,
-          oldPassword: formData.oldPassword,
+          oldPassword: formData.oldPassword
+        })
+      });
+
+      const result = await response.json();
+      if (response.ok && result.requiresOtp) {
+        setShowOtp(true);
+        alert('📩 OTP sent to your emails! Please verify.');
+      } else {
+        alert('❌ Error: ' + result.message);
+      }
+    } catch (err) {
+      console.error('Error initiating password change:', err);
+      alert('❌ Connection Error');
+    }
+    setLoading(false);
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const response = await fetch(`${API_URL}/auth/verify-change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: user.username,
+          otp: formData.otp,
           newPassword: formData.newPassword
         })
       });
@@ -38,12 +68,13 @@ const Settings = () => {
       const result = await response.json();
       if (response.ok) {
         alert('✅ Password changed successfully!');
-        setFormData({ oldPassword: '', newPassword: '', confirmPassword: '' });
+        setFormData({ oldPassword: '', newPassword: '', confirmPassword: '', otp: '' });
+        setShowOtp(false);
       } else {
         alert('❌ Error: ' + result.message);
       }
     } catch (err) {
-      console.error('Error changing password:', err);
+      console.error('Error verifying OTP:', err);
       alert('❌ Connection Error');
     }
     setLoading(false);
@@ -65,43 +96,70 @@ const Settings = () => {
             <Lock size={20} color="var(--accent)" /> Change Admin Password
           </h3>
 
-          <form onSubmit={handleSubmit}>
-            <div style={{marginBottom: '1.5rem'}}>
-              <label style={labelStyle}>Current Password</label>
-              <input 
-                type="password" 
-                style={inputStyle} 
-                required 
-                value={formData.oldPassword} 
-                onChange={e => setFormData({...formData, oldPassword: e.target.value})}
-              />
-            </div>
+          <form onSubmit={showOtp ? handleVerifyOtp : handleSubmit}>
+            {!showOtp ? (
+              <>
+                <div style={{marginBottom: '1.5rem'}}>
+                  <label style={labelStyle}>Current Password</label>
+                  <input 
+                    type="password" 
+                    style={inputStyle} 
+                    required 
+                    value={formData.oldPassword} 
+                    onChange={e => setFormData({...formData, oldPassword: e.target.value})}
+                  />
+                </div>
 
-            <div style={{marginBottom: '1.5rem'}}>
-              <label style={labelStyle}>New Password</label>
-              <input 
-                type="password" 
-                style={inputStyle} 
-                required 
-                value={formData.newPassword} 
-                onChange={e => setFormData({...formData, newPassword: e.target.value})}
-              />
-            </div>
+                <div style={{marginBottom: '1.5rem'}}>
+                  <label style={labelStyle}>New Password</label>
+                  <input 
+                    type="password" 
+                    style={inputStyle} 
+                    required 
+                    value={formData.newPassword} 
+                    onChange={e => setFormData({...formData, newPassword: e.target.value})}
+                  />
+                </div>
 
-            <div style={{marginBottom: '2rem'}}>
-              <label style={labelStyle}>Confirm New Password</label>
-              <input 
-                type="password" 
-                style={inputStyle} 
-                required 
-                value={formData.confirmPassword} 
-                onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
-              />
-            </div>
+                <div style={{marginBottom: '2rem'}}>
+                  <label style={labelStyle}>Confirm New Password</label>
+                  <input 
+                    type="password" 
+                    style={inputStyle} 
+                    required 
+                    value={formData.confirmPassword} 
+                    onChange={e => setFormData({...formData, confirmPassword: e.target.value})}
+                  />
+                </div>
 
-            <button type="submit" disabled={loading} className="btn btn-primary" style={{width: '100%', padding: '1rem', gap: '0.5rem'}}>
-              {loading ? 'Changing...' : <><ShieldCheck size={18} /> Update Password</>}
-            </button>
+                <button type="submit" disabled={loading} className="btn btn-primary" style={{width: '100%', padding: '1rem', gap: '0.5rem'}}>
+                  {loading ? 'Processing...' : <><ShieldCheck size={18} /> Get OTP to Change</>}
+                </button>
+              </>
+            ) : (
+              <>
+                <div style={{marginBottom: '2rem', textAlign: 'center'}}>
+                  <p style={{color: 'var(--success)', marginBottom: '1rem', fontSize: '0.875rem'}}>Check your emails for the 6-digit code.</p>
+                  <label style={{...labelStyle, justifyContent: 'center'}}>Enter OTP</label>
+                  <input 
+                    type="text" 
+                    style={{...inputStyle, textAlign: 'center', letterSpacing: '5px', fontSize: '1.5rem'}} 
+                    required 
+                    maxLength="6"
+                    value={formData.otp} 
+                    onChange={e => setFormData({...formData, otp: e.target.value})}
+                  />
+                </div>
+
+                <button type="submit" disabled={loading} className="btn btn-primary" style={{width: '100%', padding: '1rem', gap: '0.5rem', marginBottom: '1rem'}}>
+                  {loading ? 'Verifying...' : <><ShieldCheck size={18} /> Confirm & Update Password</>}
+                </button>
+                
+                <button type="button" onClick={() => setShowOtp(false)} style={{width: '100%', background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.875rem', cursor: 'pointer'}}>
+                  Back
+                </button>
+              </>
+            )}
           </form>
         </div>
       </div>
