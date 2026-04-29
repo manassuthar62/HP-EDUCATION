@@ -14,6 +14,7 @@ const studentSchema = new mongoose.Schema({
     batchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Batch' },
     totalFee: { type: Number, required: true },
     discount: { type: Number, default: 0 },
+    discountRemark: { type: String },
     finalFee: { type: Number, required: true },
     paymentPlan: { type: String, enum: ['One-Shot', 'Installments'], default: 'Installments' },
     installmentsCount: { type: Number, default: 1 },

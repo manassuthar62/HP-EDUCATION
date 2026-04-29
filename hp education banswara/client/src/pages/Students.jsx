@@ -112,12 +112,19 @@ const Students = () => {
   };
 
   const filteredStudents = students.filter(student => {
-    // If no course is selected, don't show any students
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = student.name?.toLowerCase().includes(searchLower) || 
+                         student.studentId?.toLowerCase().includes(searchLower) ||
+                         student.contact?.includes(searchTerm);
+    
+    // If user is searching, show results from any course
+    if (searchTerm.trim() !== '') {
+      return matchesSearch;
+    }
+
+    // If no search, filter by selected course
     if (!selectedCourse) return false;
 
-    const matchesSearch = student.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         student.studentId?.toLowerCase().includes(searchTerm.toLowerCase());
-    
     const studentCourseIds = (student.courses || []).map(c => c.courseId?._id || c.courseId);
     const matchesCourse = studentCourseIds.includes(selectedCourse);
     
@@ -142,62 +149,84 @@ const Students = () => {
         </button>
       </div>
 
-      <div className="data-table-container">
-        <div style={{padding: '1.5rem', display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border)'}}>
-          <div style={{position: 'relative', flex: 1}}>
-            <Search size={18} style={{position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)'}} />
-            <input 
-              type="text" 
-              placeholder="Search students..." 
-              style={{
-                width: '100%', 
-                padding: '0.75rem 1rem 0.75rem 2.5rem', 
-                backgroundColor: 'var(--primary-light)', 
-                border: '1px solid var(--border)',
-                borderRadius: '0.5rem',
-                color: 'var(--text-main)',
-                outline: 'none'
-              }}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+      <div className="data-table-container" style={{ backgroundColor: '#ffffff', borderRadius: '1.25rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+        <div style={{ padding: '2rem', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', flex: 1, minWidth: '300px' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <input 
+                type="text" 
+                placeholder="Search by Name, Mobile or ID..." 
+                style={{
+                  width: '100%', 
+                  padding: '0.85rem 1rem 0.85rem 2.75rem', 
+                  backgroundColor: '#ffffff', 
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: '0.75rem',
+                  color: '#1e293b',
+                  fontSize: '0.95rem',
+                  outline: 'none',
+                  transition: 'all 0.2s'
+                }}
+                className="input-glow"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div style={{ position: 'relative' }}>
+              <Filter size={18} style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', pointerEvents: 'none' }} />
+              <select 
+                value={selectedCourse}
+                onChange={(e) => setSelectedCourse(e.target.value)}
+                style={{
+                  padding: '0.85rem 2.5rem 0.85rem 2.75rem',
+                  backgroundColor: '#ffffff',
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: '0.75rem',
+                  color: '#1e293b',
+                  fontSize: '0.95rem',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  minWidth: '220px',
+                  appearance: 'none'
+                }}
+                className="input-glow"
+              >
+                <option value="">--- All Courses ---</option>
+                {courses.map(course => (
+                  <option key={course._id} value={course._id}>{course.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <select 
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-            style={{
-              padding: '0.75rem 1rem',
-              backgroundColor: 'var(--primary-light)',
-              border: '1px solid var(--border)',
-              borderRadius: '0.5rem',
-              color: 'var(--text-main)',
-              outline: 'none',
-              cursor: 'pointer',
-              minWidth: '200px'
-            }}
-          >
-            <option value="">--- Select Course ---</option>
-            {courses.map(course => (
-              <option key={course._id} value={course._id}>{course.name}</option>
-            ))}
-          </select>
+          
           <button 
             className="btn" 
-            style={{backgroundColor: 'var(--success)', color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem'}}
+            style={{ 
+              backgroundColor: '#10b981', 
+              color: 'white', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem', 
+              padding: '0.85rem 1.5rem', 
+              borderRadius: '0.75rem',
+              fontWeight: 700,
+              boxShadow: '0 4px 14px 0 rgba(16, 185, 129, 0.3)'
+            }}
             onClick={handleDownloadExcel}
           >
             <Download size={18} /> Export Excel
           </button>
         </div>
-        <table>
+        <table style={{ borderCollapse: 'separate', borderSpacing: '0' }}>
           <thead>
             <tr>
-              <th style={{ width: '60px' }}>S.N.</th>
-              <th>Name</th>
-              <th>Contact Info</th>
-              <th>Enrolled Courses</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>S.N.</th>
+              <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Student Details</th>
+              <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Contact Info</th>
+              <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Enrolled Courses</th>
+              <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Status</th>
+              <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -258,11 +287,13 @@ const Students = () => {
                 </tr>
               ))
             ) : (
-              <tr>
+              <tr key="no-results">
                 <td colSpan="6" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                  {selectedCourse 
-                    ? 'No students found in this course.' 
-                    : 'Please select a course from the dropdown above to view students.'}
+                  {searchTerm 
+                    ? `No students found matching "${searchTerm}"` 
+                    : selectedCourse 
+                      ? 'No students found in this course.' 
+                      : 'Search by Name/Mobile or select a course to view students.'}
                 </td>
               </tr>
             )}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Users, BookOpen, Layers, Receipt, PieChart, Settings as SettingsIcon, Plus, Menu, X, Download, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, BookOpen, Layers, Receipt, PieChart, Settings as SettingsIcon, Plus, Menu, X, Download, LogOut, CreditCard as IDIcon } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
@@ -17,6 +17,7 @@ import EditCourse from './pages/EditCourse';
 import StudentDetails from './pages/StudentDetails';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import IDCards from './pages/IDCards';
 
 
 
@@ -48,44 +49,52 @@ function App() {
           className="sidebar-toggle" 
           onClick={() => setSidebarOpen(!isSidebarOpen)}
           aria-label="Toggle Sidebar"
+          style={{ left: isSidebarOpen ? '290px' : '1.5rem' }}
         >
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
         <aside className={`sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
-          <div className="logo" style={{ padding: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '2.5rem' }}>
-            <img src="/hp logo.png" alt="HP Education" style={{ width: '100%', height: '80px', objectFit: 'contain' }} />
+          <div className="sidebar-logo-container">
+            <img src="/hp logo.png" alt="HP Education" style={{ width: '120px', height: 'auto', objectFit: 'contain' }} />
           </div>
+          
           <nav className="nav-links">
             <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth < 768 && setSidebarOpen(false)} end>
-              <LayoutDashboard size={20} /> Dashboard
+              <LayoutDashboard size={20} color="#3b82f6" strokeWidth={2.5} /> <span>Dashboard</span>
             </NavLink>
             <NavLink to="/students" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}>
-              <Users size={20} /> Students
+              <Users size={20} color="#10b981" strokeWidth={2.5} /> <span>Students</span>
             </NavLink>
             <NavLink to="/courses" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}>
-              <BookOpen size={20} /> Courses & Batches
+              <BookOpen size={20} color="#8b5cf6" strokeWidth={2.5} /> <span>Courses & Batches</span>
             </NavLink>
             <NavLink to="/fees" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}>
-              <Receipt size={20} /> Fee Management
+              <Receipt size={20} color="#f59e0b" strokeWidth={2.5} /> <span>Fee Management</span>
             </NavLink>
             <NavLink to="/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}>
-              <PieChart size={20} /> Reports
+              <PieChart size={20} color="#ef4444" strokeWidth={2.5} /> <span>Reports</span>
+            </NavLink>
+            <NavLink to="/id-cards" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}>
+              <IDIcon size={20} color="#06b6d4" strokeWidth={2.5} /> <span>ID Cards</span>
             </NavLink>
             <NavLink to="/settings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}>
-              <SettingsIcon size={20} /> Settings
+              <SettingsIcon size={20} color="#64748b" strokeWidth={2.5} /> <span>Settings</span>
             </NavLink>
+          </nav>
+
+          <div className="logout-btn-container">
             <button 
               onClick={handleLogout} 
-              className="nav-link" 
-              style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer', marginTop: 'auto' }}
+              className="nav-link logout-link" 
+              style={{ background: 'none', border: 'none', width: '100%', cursor: 'pointer' }}
             >
-              <LogOut size={20} /> Logout
+              <LogOut size={20} color="#dc2626" strokeWidth={2.5} /> <span>Logout</span>
             </button>
-          </nav>
+          </div>
         </aside>
 
-        <main className="main-content">
+        <main className="main-content" style={{ marginLeft: isSidebarOpen ? '280px' : '0' }}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/students" element={<Students />} />
@@ -100,6 +109,7 @@ function App() {
             <Route path="/record-payment" element={<RecordPayment />} />
             <Route path="/reminders" element={<Reminders />} />
             <Route path="/reports" element={<Reports />} />
+            <Route path="/id-cards" element={<IDCards />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

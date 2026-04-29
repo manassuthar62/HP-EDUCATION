@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Download, Search, Receipt } from 'lucide-react';
+import { Plus, Download, Search, Receipt, TrendingUp, Calendar, AlertCircle, CreditCard, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { generateReceipt } from '../utils/receiptGenerator';
 import API_URL from '../config';
@@ -120,6 +120,9 @@ const Fees = () => {
         paymentMethod: p.paymentMethod,
         utrNumber: p.utrNumber,
         remarks: p.remarks || `Payment via ${p.paymentMethod}`,
+        discount: studentCourse.discount || 0,
+        baseFee: studentCourse.totalFee || 0,
+        discountRemark: studentCourse.discountRemark,
         installment: p.remarks
       });
     } catch (err) {
@@ -144,48 +147,130 @@ const Fees = () => {
         </button>
       </div>
 
-      <div className="stats-grid">
-        <div className="stat-card">
-          <span className="stat-label">Collected Today</span>
-          <span className="stat-value">₹{(stats.today || 0).toLocaleString()}</span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '3rem' }}>
+        {/* Collected Today Card */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+          borderRadius: '1.25rem', 
+          padding: '2rem', 
+          color: 'white',
+          boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.2)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.1 }}>
+            <TrendingUp size={120} />
+          </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, opacity: 0.9 }}>Collected Today</p>
+            <h2 style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 800 }}>₹{(stats.today || 0).toLocaleString()}</h2>
+          </div>
+          <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '1rem', backdropFilter: 'blur(4px)' }}>
+            <DollarSign size={28} />
+          </div>
         </div>
-        <div className="stat-card">
-          <span className="stat-label">This Month</span>
-          <span className="stat-value">₹{(stats.month || 0).toLocaleString()}</span>
+
+        {/* This Month Card */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', 
+          borderRadius: '1.25rem', 
+          padding: '2rem', 
+          color: 'white',
+          boxShadow: '0 10px 15px -3px rgba(37, 99, 235, 0.2)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.1 }}>
+            <Calendar size={120} />
+          </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, opacity: 0.9 }}>This Month</p>
+            <h2 style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 800 }}>₹{(stats.month || 0).toLocaleString()}</h2>
+          </div>
+          <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '1rem', backdropFilter: 'blur(4px)' }}>
+            <Receipt size={28} />
+          </div>
         </div>
-        <div className="stat-card">
-          <span className="stat-label">Total Outstanding</span>
-          <span className="stat-value" style={{color: 'var(--error)'}}>₹{(stats.pending || 0).toLocaleString()}</span>
+
+        {/* Total Outstanding Card */}
+        <div style={{ 
+          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 
+          borderRadius: '1.25rem', 
+          padding: '2rem', 
+          color: 'white',
+          boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.2)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.1 }}>
+            <AlertCircle size={120} />
+          </div>
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, opacity: 0.9 }}>Total Outstanding</p>
+            <h2 style={{ margin: '0.5rem 0 0 0', fontSize: '2rem', fontWeight: 800 }}>₹{(stats.pending || 0).toLocaleString()}</h2>
+          </div>
+          <div style={{ padding: '0.75rem', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '1rem', backdropFilter: 'blur(4px)' }}>
+            <AlertCircle size={28} />
+          </div>
         </div>
       </div>
 
-      <div className="data-table-container">
-        <div style={{padding: '0.5rem 1.5rem', display: 'flex', gap: '2rem', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--bg-main)'}}>
+      <div className="data-table-container" style={{ backgroundColor: '#ffffff', borderRadius: '1.25rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+        <div style={{ padding: '0 2rem', backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', gap: '2.5rem' }}>
           <button 
             onClick={() => setView('transactions')}
-            style={{padding: '1rem 0', background: 'none', border: 'none', borderBottom: view === 'transactions' ? '2px solid var(--accent)' : '2px solid transparent', color: view === 'transactions' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600, cursor: 'pointer'}}
+            style={{
+              padding: '1.25rem 0', 
+              background: 'none', 
+              border: 'none', 
+              borderBottom: view === 'transactions' ? '3px solid #2563eb' : '3px solid transparent', 
+              color: view === 'transactions' ? '#2563eb' : '#64748b', 
+              fontWeight: 700, 
+              cursor: 'pointer',
+              fontSize: '0.95rem',
+              transition: 'all 0.2s'
+            }}
           >
             Recent Transactions
           </button>
           <button 
             onClick={() => setView('dues')}
-            style={{padding: '1rem 0', background: 'none', border: 'none', borderBottom: view === 'dues' ? '2px solid var(--accent)' : '2px solid transparent', color: view === 'dues' ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600, cursor: 'pointer'}}
+            style={{
+              padding: '1.25rem 0', 
+              background: 'none', 
+              border: 'none', 
+              borderBottom: view === 'dues' ? '3px solid #2563eb' : '3px solid transparent', 
+              color: view === 'dues' ? '#2563eb' : '#64748b', 
+              fontWeight: 700, 
+              cursor: 'pointer',
+              fontSize: '0.95rem',
+              transition: 'all 0.2s'
+            }}
           >
             Pending Dues (Upcoming EMI)
           </button>
         </div>
 
         {view === 'transactions' ? (
-          <table>
+          <table style={{ borderCollapse: 'separate', borderSpacing: '0' }}>
             <thead>
               <tr>
-                <th>Receipt ID</th>
-                <th>Student</th>
-                <th>Course</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Method</th>
-                <th>Actions</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Receipt ID</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Student</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Course</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Amount</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Date</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Method</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -212,15 +297,15 @@ const Fees = () => {
             </tbody>
           </table>
         ) : (
-          <table>
+          <table style={{ borderCollapse: 'separate', borderSpacing: '0' }}>
             <thead>
               <tr>
-                <th>Student Name</th>
-                <th>Course</th>
-                <th>Next Due Date</th>
-                <th>Next EMI (₹)</th>
-                <th>Remaining Total</th>
-                <th>Actions</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Student Name</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Course</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Next Due Date</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Next EMI (₹)</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Remaining Total</th>
+                <th style={{ backgroundColor: '#f8fafc', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '0.05em', padding: '1.25rem 1.5rem', borderBottom: '1px solid #e2e8f0' }}>Actions</th>
               </tr>
             </thead>
             <tbody>

@@ -133,6 +133,10 @@ export const generateReceipt = (data) => {
       }
     }
 
+    if (data.discount > 0) {
+      historyData.push(['', 'BASE COURSE FEE', `Rs. ${(data.baseFee || 0).toLocaleString()}/-`]);
+      historyData.push(['', `DISCOUNT APPLIED (${data.discountRemark || 'N/A'})`, `- Rs. ${(data.discount || 0).toLocaleString()}/-`]);
+    }
     historyData.push(['', 'TOTAL COURSE FEE', `Rs. ${(data.totalFee || 0).toLocaleString()}/-`]);
     historyData.push(['', 'TOTAL PAID TILL DATE', `Rs. ${totalPaid.toLocaleString()}/-`]);
     historyData.push(['', 'REMAINING BALANCE', `Rs. ${(data.totalFee - totalPaid).toLocaleString()}/-`]);
@@ -164,8 +168,9 @@ export const generateReceipt = (data) => {
         }
 
         // Bold for all summary rows
-        const summaryLabels = ['TOTAL COURSE FEE', 'TOTAL PAID TILL DATE', 'REMAINING BALANCE', 'NEXT DUE DATE'];
-        if (cellData.row.raw && summaryLabels.includes(cellData.row.raw[1])) {
+        const label = cellData.row.raw ? cellData.row.raw[1] : '';
+        const summaryLabels = ['BASE COURSE FEE', 'DISCOUNT APPLIED', 'TOTAL COURSE FEE', 'TOTAL PAID TILL DATE', 'REMAINING BALANCE', 'NEXT DUE DATE'];
+        if (summaryLabels.some(s => label.startsWith(s))) {
           cellData.cell.styles.fontStyle = 'bold';
         }
       }
