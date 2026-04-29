@@ -21,16 +21,10 @@ router.post('/login', async (req, res) => {
 
     const html = getOTPTemplate(otp, 'login');
 
-    // Send to all configured emails in parallel for speed
-    const recipients = [user.email];
-    if (process.env.SECONDARY_EMAIL) recipients.push(process.env.SECONDARY_EMAIL);
-    if (process.env.THIRD_EMAIL) recipients.push(process.env.THIRD_EMAIL);
+    // Send only to the primary registered email
+    await sendEmail(user.email, 'Login Verification Code - HP GROUP OF EDUCATION', html);
 
-    Promise.all(recipients.map(email => 
-      sendEmail(email, 'Login Verification Code - HP GROUP OF EDUCATION', html)
-    )).catch(err => console.error('Error in parallel email sending:', err));
-
-    res.json({ message: 'OTP sent to your registered email(s).', requiresOtp: true, username: user.username });
+    res.json({ message: 'OTP sent to your registered email.', requiresOtp: true, username: user.username });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -138,15 +132,9 @@ router.post('/change-password', async (req, res) => {
 
     const html = getOTPTemplate(otp, 'password');
 
-    const recipients = [user.email];
-    if (process.env.SECONDARY_EMAIL) recipients.push(process.env.SECONDARY_EMAIL);
-    if (process.env.THIRD_EMAIL) recipients.push(process.env.THIRD_EMAIL);
+    await sendEmail(user.email, 'Password Change Verification - HP GROUP OF EDUCATION', html);
 
-    Promise.all(recipients.map(email => 
-      sendEmail(email, 'Password Change Verification - HP GROUP OF EDUCATION', html)
-    )).catch(err => console.error('Error in parallel email sending:', err));
-
-    res.json({ message: 'OTP sent to your registered email(s).', requiresOtp: true });
+    res.json({ message: 'OTP sent to your registered email.', requiresOtp: true });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

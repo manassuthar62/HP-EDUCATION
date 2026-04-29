@@ -15,14 +15,14 @@ mongoose.connect(MONGODB_URI)
   .then(async () => {
     console.log('Connected to MongoDB: ' + MONGODB_URI.split('@')[1]);
     
-    // Auto-update live admin email if missing
+    // Auto-update live admin email
     try {
       const User = require('./models/User');
       const admin = await User.findOne({ username: 'admin' });
-      if (admin && !admin.email) {
-        admin.email = 'hpeducation918@gmail.com';
+      if (admin) {
+        admin.email = 'hp9414401525@gmail.com'; // User's preferred single email
         await admin.save();
-        console.log('✅ Live Admin Email Updated successfully.');
+        console.log('✅ Admin Email set to hp9414401525@gmail.com');
       }
     } catch (e) {
       console.error('Error auto-updating admin:', e);
