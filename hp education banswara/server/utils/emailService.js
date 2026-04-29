@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async (to, subject, html) => {
   try {
     const mailOptions = {
-      from: `"HP Education" <${process.env.EMAIL_USER}>`,
+      from: '"HP Education" <hpeducation918@gmail.com>',
       to,
       subject,
       html
