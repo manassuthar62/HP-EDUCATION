@@ -113,7 +113,14 @@ const StudentDetails = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
                 <label style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Father's Name</label>
-                <span style={{ fontWeight: 600, color: '#1e293b' }}>{student.fatherName}</span>
+                <span style={{ fontWeight: 600, color: '#1e293b' }}>{student.fatherName || 'N/A'}</span>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.25rem' }}>Date of Birth</label>
+                <span style={{ fontWeight: 600, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Calendar size={14} color="#64748b" /> 
+                  {student.dob ? (() => { const d = new Date(student.dob); return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; })() : 'N/A'}
+                </span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
