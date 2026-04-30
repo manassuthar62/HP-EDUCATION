@@ -2,13 +2,12 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  host: 'smtp-relay.brevo.com',
+  port: 2525,
+  secure: false,
   auth: {
-    user: 'hpeducation918@gmail.com',
-    pass: 'mdftggtvhvzfxjah'
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
@@ -31,6 +30,7 @@ const sendEmail = async (to, subject, html) => {
 };
 
 module.exports = { sendEmail };
+
 
 
 
