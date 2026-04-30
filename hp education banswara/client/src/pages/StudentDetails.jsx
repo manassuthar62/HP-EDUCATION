@@ -53,9 +53,11 @@ const StudentDetails = () => {
       generateReceipt({
         receiptId: t.receiptId,
         studentName: student.name,
+        fatherName: student.fatherName,
+        studentDob: student.dob,
         studentContact: student.contact,
         courseName: t.courseId?.name || course?.courseId?.name || 'N/A',
-        batchName: student.batchName || course?.batchId?.name || 'N/A',
+        batchName: t.batchId?.name || course?.batchId?.name || 'N/A',
         totalFee: course?.finalFee || 0,
         installmentsCount: course?.installmentsCount || 1,
         amount: t.amount,
