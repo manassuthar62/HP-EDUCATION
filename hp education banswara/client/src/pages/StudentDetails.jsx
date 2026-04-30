@@ -312,104 +312,151 @@ const StudentDetails = () => {
               <div style={{ padding: '0.5rem', backgroundColor: '#fff7ed', borderRadius: '0.5rem', display: 'flex' }}>
                 <Calendar size={20} color="#ea580c" />
               </div>
-              Fee Installment Schedule
+              {course?.paymentPlan === 'One-Shot' ? 'Payment Status' : 'Fee Installment Schedule'}
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {(() => {
-                const plan = [];
-                const instCount = course?.installmentsCount || 1;
-                const paidEMIsCount = Math.max(0, transactions.length - 1);
-                const remainingInstCount = Math.max(1, instCount - paidEMIsCount);
-                const emi = balance > 0 ? Math.ceil(balance / remainingInstCount) : 0;
-                
-                plan.push({ 
-                  label: 'Initial / Down Payment', 
-                  status: 'PAID', 
-                  amount: transactions[transactions.length - 1]?.amount || 0,
-                  date: transactions[transactions.length - 1]?.paymentDate
-                });
-
-                let runningBalance = balance;
-                for (let i = 1; i <= instCount; i++) {
-                  const isPaid = transactions.length > i;
-                  let displayAmount = emi;
-                  if (isPaid) {
-                    displayAmount = transactions[transactions.length - 1 - i]?.amount || emi;
-                  } else {
-                    if (i === instCount) {
-                      displayAmount = runningBalance;
-                    } else {
-                      displayAmount = emi;
-                      runningBalance -= emi;
-                    }
-                  }
-
-                  plan.push({
-                    label: `Installment #${i}`,
-                    status: isPaid ? 'PAID' : 'PENDING',
-                    amount: displayAmount,
-                    date: isPaid ? transactions[transactions.length - 1 - i]?.paymentDate : (() => {
-                      const baseDateStr = course?.nextDueDate || student.createdAt;
-                      if (!baseDateStr) return null;
-                      const baseDate = new Date(baseDateStr);
-                      const offset = course?.nextDueDate ? (i - 1) : i;
-                      baseDate.setMonth(baseDate.getMonth() + offset);
-                      return baseDate;
-                    })()
-                  });
-                }
-
-                return plan.map((item, idx) => (
-                  <div key={idx} style={{
-                    display: 'flex', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center', 
-                    padding: '1.25rem 1.5rem', 
-                    backgroundColor: item.status === 'PAID' ? '#f0fdf4' : '#fffbeb',
-                    borderRadius: '1rem',
-                    border: `1.5px solid ${item.status === 'PAID' ? '#dcfce7' : '#fef3c7'}`,
-                    transition: 'transform 0.2s'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                      <div style={{ 
-                        width: '40px', 
-                        height: '40px', 
-                        borderRadius: '50%', 
-                        backgroundColor: item.status === 'PAID' ? '#22c55e' : '#f59e0b',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                      }}>
-                        {item.status === 'PAID' ? <TrendingUp size={20} /> : <Clock size={20} />}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
-                          {item.date ? (() => {
-                            const d = new Date(item.date);
-                            return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-                          })() : 'Scheduled'}
-                        </div>
-                      </div>
+              {course?.paymentPlan === 'One-Shot' ? (
+                <div style={{
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  padding: '1.25rem 1.5rem', 
+                  backgroundColor: balance <= 0 ? '#f0fdf4' : '#fffbeb',
+                  borderRadius: '1rem',
+                  border: `1.5px solid ${balance <= 0 ? '#dcfce7' : '#fef3c7'}`
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                    <div style={{ 
+                      width: '40px', 
+                      height: '40px', 
+                      borderRadius: '50%', 
+                      backgroundColor: balance <= 0 ? '#22c55e' : '#f59e0b',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white'
+                    }}>
+                      <TrendingUp size={20} />
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.1rem' }}>₹{item.amount.toLocaleString()}</div>
-                      <span style={{
-                        fontSize: '0.7rem', 
-                        fontWeight: 800, 
-                        color: item.status === 'PAID' ? '#16a34a' : '#b45309',
-                        textTransform: 'uppercase',
-                        backgroundColor: item.status === 'PAID' ? '#dcfce7' : '#fef3c7',
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: '0.4rem'
-                      }}>
-                        {item.status}
-                      </span>
+                    <div>
+                      <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>Full Course Payment</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                        {balance <= 0 ? 'All fees settled' : 'Payment pending'}
+                      </div>
                     </div>
                   </div>
-                ));
-              })()}
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.1rem' }}>₹{course?.finalFee.toLocaleString()}</div>
+                    <span style={{
+                      fontSize: '0.7rem', 
+                      fontWeight: 800, 
+                      color: balance <= 0 ? '#16a34a' : '#b45309',
+                      textTransform: 'uppercase',
+                      backgroundColor: balance <= 0 ? '#dcfce7' : '#fef3c7',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '0.4rem'
+                    }}>
+                      {balance <= 0 ? 'PAID' : 'PENDING'}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                (() => {
+                  const plan = [];
+                  const instCount = course?.installmentsCount || 1;
+                  const paidEMIsCount = Math.max(0, transactions.length - 1);
+                  const remainingInstCount = Math.max(1, instCount - paidEMIsCount);
+                  const emi = balance > 0 ? Math.ceil(balance / remainingInstCount) : 0;
+                  
+                  plan.push({ 
+                    label: 'Initial / Down Payment', 
+                    status: 'PAID', 
+                    amount: transactions[transactions.length - 1]?.amount || 0,
+                    date: transactions[transactions.length - 1]?.paymentDate
+                  });
+
+                  let runningBalance = balance;
+                  for (let i = 1; i <= instCount; i++) {
+                    const isPaid = transactions.length > i;
+                    let displayAmount = emi;
+                    if (isPaid) {
+                      displayAmount = transactions[transactions.length - 1 - i]?.amount || emi;
+                    } else {
+                      if (i === instCount) {
+                        displayAmount = runningBalance;
+                      } else {
+                        displayAmount = emi;
+                        runningBalance -= emi;
+                      }
+                    }
+
+                    plan.push({
+                      label: `Installment #${i}`,
+                      status: isPaid ? 'PAID' : 'PENDING',
+                      amount: displayAmount,
+                      date: isPaid ? transactions[transactions.length - 1 - i]?.paymentDate : (() => {
+                        const baseDateStr = course?.nextDueDate || student.createdAt;
+                        if (!baseDateStr) return null;
+                        const baseDate = new Date(baseDateStr);
+                        const offset = course?.nextDueDate ? (i - 1) : i;
+                        baseDate.setMonth(baseDate.getMonth() + offset);
+                        return baseDate;
+                      })()
+                    });
+                  }
+
+                  return plan.map((item, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      padding: '1.25rem 1.5rem', 
+                      backgroundColor: item.status === 'PAID' ? '#f0fdf4' : '#fffbeb',
+                      borderRadius: '1rem',
+                      border: `1.5px solid ${item.status === 'PAID' ? '#dcfce7' : '#fef3c7'}`,
+                      transition: 'transform 0.2s'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                        <div style={{ 
+                          width: '40px', 
+                          height: '40px', 
+                          borderRadius: '50%', 
+                          backgroundColor: item.status === 'PAID' ? '#22c55e' : '#f59e0b',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white'
+                        }}>
+                          {item.status === 'PAID' ? <TrendingUp size={20} /> : <Clock size={20} />}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '1rem' }}>{item.label}</div>
+                          <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 500 }}>
+                            {item.date ? (() => {
+                              const d = new Date(item.date);
+                              return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+                            })() : 'Scheduled'}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '1.1rem' }}>₹{item.amount.toLocaleString()}</div>
+                        <span style={{
+                          fontSize: '0.7rem', 
+                          fontWeight: 800, 
+                          color: item.status === 'PAID' ? '#16a34a' : '#b45309',
+                          textTransform: 'uppercase',
+                          backgroundColor: item.status === 'PAID' ? '#dcfce7' : '#fef3c7',
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: '0.4rem'
+                        }}>
+                          {item.status}
+                        </span>
+                      </div>
+                    </div>
+                  ));
+                })()
+              )}
             </div>
           </div>
         </div>
