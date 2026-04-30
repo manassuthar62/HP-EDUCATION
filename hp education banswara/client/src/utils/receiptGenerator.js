@@ -69,7 +69,7 @@ export const generateReceipt = (data) => {
     
     doc.text("Received From:", 15, startY + 40);
     doc.setFont("helvetica", "bold");
-    doc.text(`${data.studentName}`, 45, startY + 40, { maxWidth: 150 });
+    doc.text(`${data.studentName} S/O ${data.fatherName || 'N/A'}`, 45, startY + 40, { maxWidth: 150 });
     doc.setFont("helvetica", "normal");
     doc.line(45, startY + 41, 195, startY + 41);
     

@@ -107,6 +107,7 @@ const Fees = () => {
       generateReceipt({
         receiptId: p.receiptId,
         studentName: p.studentId?.name || 'N/A',
+        fatherName: p.studentId?.fatherName || 'N/A',
         studentContact: p.studentId?.contact || 'N/A',
         studentDob: p.studentId?.dob || '',
         courseName: p.courseId?.name || 'N/A',
