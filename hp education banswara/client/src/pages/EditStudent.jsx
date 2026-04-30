@@ -11,7 +11,7 @@ const EditStudent = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     studentId: '',
-    name: '', fatherName: '', contact: '', alternateContact: '', email: '', address: '',
+    name: '', dob: '', fatherName: '', contact: '', alternateContact: '', email: '', address: '',
     courseName: '', batchName: '', rollNo: '',
     totalFee: '', discount: '0', paymentPlan: 'Installments', paidAmount: '0', installmentsCount: '1', nextDueDate: ''
   });
@@ -34,6 +34,7 @@ const EditStudent = () => {
           setFormData({
             studentId: student.studentId || '',
             name: student.name || '',
+            dob: student.dob ? new Date(student.dob).toISOString().split('T')[0] : '',
             fatherName: student.fatherName || '',
             contact: student.contact || '',
             alternateContact: student.alternateContact || '',
@@ -153,6 +154,11 @@ const EditStudent = () => {
             <div style={inputGroupStyle}>
               <label style={labelStyle}>Full Name</label>
               <input style={inputStyle} type="text" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+            </div>
+
+            <div style={inputGroupStyle}>
+              <label style={labelStyle}>Date of Birth</label>
+              <input style={inputStyle} type="date" required value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} />
             </div>
 
             <div style={inputGroupStyle}>

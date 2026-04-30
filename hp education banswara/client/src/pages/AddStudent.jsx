@@ -9,13 +9,14 @@ const AddStudent = () => {
   const [selectedCourseBatches, setSelectedCourseBatches] = useState([]);
   const [formData, setFormData] = useState({
     studentId: 'HP-' + Math.floor(Math.random() * 10000), // Auto-generate random ID
-    name: '', fatherName: '', contact: '', alternateContact: '', email: '', address: '',
+    name: '', dob: '', fatherName: '', contact: '', alternateContact: '', email: '', address: '',
     courseName: '', batchName: '', rollNo: '',
     totalFee: '', discount: '0', discountRemark: '', paymentPlan: 'Installments', paidAmount: '0', installmentsCount: '1', nextDueDate: '',
     paymentMethod: 'Cash', utrNumber: ''
   });
   const [errors, setErrors] = useState({
     name: '',
+    dob: '',
     contact: '',
     alternateContact: '',
     email: '',
@@ -37,6 +38,9 @@ const AddStudent = () => {
     switch (name) {
       case 'name':
         if (value.length < 3) error = 'Name must be at least 3 characters long';
+        break;
+      case 'dob':
+        if (!value) error = 'Date of Birth is required';
         break;
       case 'fatherName':
         if (value.trim().length < 3) error = "Father's name is required";
@@ -108,6 +112,10 @@ const AddStudent = () => {
     // Sequential Validation Check
     if (!formData.name.trim()) {
       showNotification('Student Full Name is required', 'error');
+      return;
+    }
+    if (!formData.dob) {
+      showNotification('Date of Birth is required', 'error');
       return;
     }
     if (!formData.fatherName.trim()) {
@@ -306,6 +314,24 @@ const AddStudent = () => {
                 />
               </div>
               {errors.name && <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.4rem', fontWeight: 600 }}>{errors.name}</div>}
+            </div>
+
+            <div style={inputGroupStyle}>
+              <label style={labelStyle}>Date of Birth</label>
+              <div className="input-glow" style={{ ...iconicInputContainer, borderColor: errors.dob ? '#ef4444' : '#e2e8f0' }}>
+                <Calendar size={18} style={iconInInput} />
+                <input 
+                  style={iconicInputStyle} 
+                  type="date" 
+                  required 
+                  value={formData.dob} 
+                  onChange={e => {
+                    setFormData({...formData, dob: e.target.value});
+                    validateField('dob', e.target.value);
+                  }} 
+                />
+              </div>
+              {errors.dob && <div style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.4rem', fontWeight: 600 }}>{errors.dob}</div>}
             </div>
 
             <div style={inputGroupStyle}>

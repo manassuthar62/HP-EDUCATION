@@ -108,6 +108,7 @@ const Fees = () => {
         receiptId: p.receiptId,
         studentName: p.studentId?.name || 'N/A',
         studentContact: p.studentId?.contact || 'N/A',
+        studentDob: p.studentId?.dob || '',
         courseName: p.courseId?.name || 'N/A',
         batchName: studentCourse.batchName || 'N/A',
         totalFee: studentCourse.finalFee || 0,

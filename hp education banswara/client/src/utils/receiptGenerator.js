@@ -91,15 +91,21 @@ export const generateReceipt = (data) => {
     doc.setFont("helvetica", "normal");
     doc.line(30, startY + 55, 90, startY + 55);
 
-    doc.text("Payment Mode:", 115, startY + 54);
+    doc.text("DOB:", 100, startY + 54);
     doc.setFont("helvetica", "bold");
-    doc.text(`${data.paymentMethod || 'N/A'}`, 145, startY + 54, { maxWidth: 50 });
+    doc.text(`${formatDate(data.studentDob)}`, 115, startY + 54, { maxWidth: 50 });
     doc.setFont("helvetica", "normal");
-    doc.line(145, startY + 55, 195, startY + 55);
+    doc.line(115, startY + 55, 195, startY + 55);
+
+    doc.text("Payment Mode:", 15, startY + 61);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${data.paymentMethod || 'N/A'}`, 45, startY + 61, { maxWidth: 50 });
+    doc.setFont("helvetica", "normal");
+    doc.line(45, startY + 62, 90, startY + 62);
 
     if (data.utrNumber) {
       doc.setFontSize(8);
-      doc.text(`UTR/ID: ${data.utrNumber}`, 145, startY + 58);
+      doc.text(`Ref ID: ${data.utrNumber}`, 115, startY + 61);
     }
     
     // Table Data
@@ -145,7 +151,7 @@ export const generateReceipt = (data) => {
     }
 
     doc.autoTable({
-      startY: startY + 60,
+      startY: startY + 65,
       head: [['S.No', "Payment Description", 'Amount']],
       body: historyData,
       theme: 'grid',
