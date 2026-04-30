@@ -13,9 +13,15 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = async (to, subject, html) => {
   try {
+    // Send to primary email and secondary email (if exists)
+    const recipients = [to];
+    if (process.env.SECONDARY_EMAIL) {
+      recipients.push(process.env.SECONDARY_EMAIL);
+    }
+
     const mailOptions = {
       from: '"HP Education" <hpeducation918@gmail.com>',
-      to: to,
+      to: recipients.join(', '),
       subject,
       html
     };
