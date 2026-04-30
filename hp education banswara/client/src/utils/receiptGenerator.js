@@ -69,49 +69,49 @@ export const generateReceipt = (data) => {
     
     doc.text("Received From:", 15, startY + 40);
     doc.setFont("helvetica", "bold");
-    doc.text(`${data.studentName}`, 45, startY + 40, { maxWidth: 150 });
+    doc.text(`${data.studentName}`, 45, startY + 40, { maxWidth: 50 });
     doc.setFont("helvetica", "normal");
-    doc.line(45, startY + 41, 195, startY + 41);
+    doc.line(45, startY + 41, 95, startY + 41);
     
-    doc.text("Father's Name:", 15, startY + 47);
+    doc.text("Father's Name:", 100, startY + 40);
     doc.setFont("helvetica", "bold");
-    doc.text(`${data.fatherName || 'N/A'}`, 45, startY + 47, { maxWidth: 150 });
+    doc.text(`${data.fatherName || 'N/A'}`, 125, startY + 40, { maxWidth: 70 });
     doc.setFont("helvetica", "normal");
-    doc.line(45, startY + 48, 195, startY + 48);
+    doc.line(125, startY + 41, 195, startY + 41);
 
-    doc.text("Course:", 15, startY + 54);
+    doc.text("Course:", 15, startY + 47);
     doc.setFont("helvetica", "bold");
-    doc.text(`${data.courseName}`, 30, startY + 54, { maxWidth: 60 });
+    doc.text(`${data.courseName}`, 30, startY + 47, { maxWidth: 60 });
+    doc.setFont("helvetica", "normal");
+    doc.line(30, startY + 48, 90, startY + 48);
+    
+    doc.text("Batch:", 100, startY + 47);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${data.batchName || 'N/A'}`, 115, startY + 47, { maxWidth: 80 });
+    doc.setFont("helvetica", "normal");
+    doc.line(115, startY + 48, 195, startY + 48);
+    
+    doc.text("Mobile:", 15, startY + 54);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${data.studentContact}`, 30, startY + 54, { maxWidth: 60 });
     doc.setFont("helvetica", "normal");
     doc.line(30, startY + 55, 90, startY + 55);
-    
-    doc.text("Batch:", 100, startY + 54);
+
+    doc.text("DOB:", 100, startY + 54);
     doc.setFont("helvetica", "bold");
-    doc.text(`${data.batchName || 'N/A'}`, 115, startY + 54, { maxWidth: 80 });
+    doc.text(`${formatDate(data.studentDob)}`, 115, startY + 54, { maxWidth: 50 });
     doc.setFont("helvetica", "normal");
     doc.line(115, startY + 55, 195, startY + 55);
-    
-    doc.text("Mobile:", 15, startY + 61);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${data.studentContact}`, 30, startY + 61, { maxWidth: 60 });
-    doc.setFont("helvetica", "normal");
-    doc.line(30, startY + 62, 90, startY + 62);
 
-    doc.text("DOB:", 100, startY + 61);
+    doc.text("Payment Mode:", 15, startY + 61);
     doc.setFont("helvetica", "bold");
-    doc.text(`${formatDate(data.studentDob)}`, 115, startY + 61, { maxWidth: 50 });
+    doc.text(`${data.paymentMethod || 'N/A'}`, 45, startY + 61, { maxWidth: 50 });
     doc.setFont("helvetica", "normal");
-    doc.line(115, startY + 62, 195, startY + 62);
-
-    doc.text("Payment Mode:", 15, startY + 68);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${data.paymentMethod || 'N/A'}`, 45, startY + 68, { maxWidth: 50 });
-    doc.setFont("helvetica", "normal");
-    doc.line(45, startY + 69, 90, startY + 69);
+    doc.line(45, startY + 62, 90, startY + 62);
 
     if (data.utrNumber) {
       doc.setFontSize(8);
-      doc.text(`Ref ID: ${data.utrNumber}`, 115, startY + 68);
+      doc.text(`Ref ID: ${data.utrNumber}`, 115, startY + 61);
     }
     
     // Table Data
@@ -157,7 +157,7 @@ export const generateReceipt = (data) => {
     }
 
     doc.autoTable({
-      startY: startY + 74,
+      startY: startY + 68,
       head: [['S.No', "Payment Description", 'Amount']],
       body: historyData,
       theme: 'grid',
