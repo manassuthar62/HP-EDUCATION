@@ -17,7 +17,7 @@ const sendEmail = async (to, subject, html) => {
       method: 'POST',
       headers: {
         'accept': 'application/json',
-        'api-key': process.env.EMAIL_PASS,
+        'api-key': (process.env.EMAIL_PASS || '').trim(),
         'content-type': 'application/json',
         'content-length': data.length
       }
