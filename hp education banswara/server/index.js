@@ -20,9 +20,9 @@ mongoose.connect(MONGODB_URI)
       const User = require('./models/User');
       const admin = await User.findOne({ username: 'admin' });
       if (admin) {
-        admin.email = 'hp9414401525@gmail.com'; // User's preferred single email
+        admin.email = 'hpeducation918@gmail.com'; // HP Education primary email
         await admin.save();
-        console.log('✅ Admin Email set to hp9414401525@gmail.com');
+        console.log('✅ Admin Email set to hpeducation918@gmail.com');
       }
     } catch (e) {
       console.error('Error auto-updating admin:', e);
