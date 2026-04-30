@@ -40,7 +40,7 @@ const AddStudent = () => {
         if (value.length < 3) error = 'Name must be at least 3 characters long';
         break;
       case 'dob':
-        if (!value) error = 'Date of Birth is required';
+        // Optional field
         break;
       case 'fatherName':
         if (value.trim().length < 3) error = "Father's name is required";
@@ -62,8 +62,10 @@ const AddStudent = () => {
         }
         break;
       case 'email':
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) error = 'Please enter a valid email address';
+        if (value.trim()) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(value)) error = 'Please enter a valid email address';
+        }
         break;
       case 'address':
         if (value.length < 5) error = 'Please enter a more detailed address';
@@ -114,10 +116,6 @@ const AddStudent = () => {
       showNotification('Student Full Name is required', 'error');
       return;
     }
-    if (!formData.dob) {
-      showNotification('Date of Birth is required', 'error');
-      return;
-    }
     if (!formData.fatherName.trim()) {
       showNotification("Father's Name is required", 'error');
       return;
@@ -134,8 +132,8 @@ const AddStudent = () => {
       showNotification('Contact and Alternate numbers cannot be the same', 'error');
       return;
     }
-    if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      showNotification('A valid Email Address is required', 'error');
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      showNotification('Please enter a valid Email Address', 'error');
       return;
     }
     if (!formData.address.trim()) {
@@ -323,7 +321,6 @@ const AddStudent = () => {
                 <input 
                   style={iconicInputStyle} 
                   type="date" 
-                  required 
                   value={formData.dob} 
                   onChange={e => {
                     setFormData({...formData, dob: e.target.value});
@@ -403,8 +400,7 @@ const AddStudent = () => {
                 <input 
                   style={iconicInputStyle} 
                   type="email" 
-                  placeholder="student@example.com" 
-                  required 
+                  placeholder="student@example.com (Optional)" 
                   value={formData.email} 
                   onChange={e => {
                     setFormData({...formData, email: e.target.value});

@@ -31,10 +31,7 @@ export const generateReceipt = (data) => {
   const redColor = [190, 30, 45]; // Dark red
   
   const drawSingleReceipt = (startY) => {
-    // Outer Border
-    doc.setDrawColor(redColor[0], redColor[1], redColor[2]);
-    doc.setLineWidth(0.5);
-    doc.rect(5, startY, 200, 140); // Receipt Frame
+    // Outer Border (Drawn at the end for dynamic height)
     
     // Header
     doc.setTextColor(redColor[0], redColor[1], redColor[2]);
@@ -42,13 +39,19 @@ export const generateReceipt = (data) => {
     doc.setFont("times", "bold");
     doc.text("HP GROUP OF EDUCATION", 105, startY + 12, { align: 'center' });
     
-    // Logo
+    // Logos
     try {
-       const img = new Image();
-       img.src = '/hp logo.png';
-       doc.addImage(img, 'PNG', -3, startY + 2, 64, 25);
+       // Left Logo (HP Education)
+       const leftImg = new Image();
+       leftImg.src = '/hp logo.png';
+       doc.addImage(leftImg, 'PNG', -3, startY + 2, 64, 25);
+
+       // Right Logo (Saraswati Maa)
+       const rightImg = new Image();
+       rightImg.src = '/sarasvatima.png';
+       doc.addImage(rightImg, 'PNG', 168, startY + 2, 25, 25);
     } catch (e) {
-       console.log("Logo load error:", e);
+       console.log("Header Logo load error:", e);
     }
     
     doc.setFontSize(9);
@@ -97,21 +100,19 @@ export const generateReceipt = (data) => {
     doc.setFont("helvetica", "normal");
     doc.line(30, startY + 55, 90, startY + 55);
 
-    doc.text("DOB:", 100, startY + 54);
+    doc.text("Payment Mode:", 100, startY + 54);
     doc.setFont("helvetica", "bold");
-    doc.text(`${formatDate(data.studentDob)}`, 115, startY + 54, { maxWidth: 50 });
+    doc.text(`${data.paymentMethod || 'N/A'}`, 130, startY + 54, { maxWidth: 65 });
     doc.setFont("helvetica", "normal");
-    doc.line(115, startY + 55, 195, startY + 55);
-
-    doc.text("Payment Mode:", 15, startY + 61);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${data.paymentMethod || 'N/A'}`, 45, startY + 61, { maxWidth: 50 });
-    doc.setFont("helvetica", "normal");
-    doc.line(45, startY + 62, 90, startY + 62);
+    doc.line(130, startY + 55, 195, startY + 55);
 
     if (data.utrNumber) {
-      doc.setFontSize(8);
-      doc.text(`Ref ID: ${data.utrNumber}`, 115, startY + 61);
+      doc.setFontSize(10);
+      doc.text("Ref ID / UTR:", 15, startY + 61);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${data.utrNumber}`, 40, startY + 61, { maxWidth: 150 });
+      doc.setFont("helvetica", "normal");
+      doc.line(40, startY + 62, 195, startY + 62);
     }
     
     // Table Data
@@ -215,6 +216,14 @@ export const generateReceipt = (data) => {
     } catch (e) {
        console.log("Seal load error:", e);
     }
+
+    // Draw the outer border rectangle dynamically based on content height
+    const finalContentY = Math.max(finalY + 38, doc.lastAutoTable.finalY + 12);
+    const boxHeight = Math.max(140, finalContentY - startY + 5);
+    
+    doc.setDrawColor(redColor[0], redColor[1], redColor[2]);
+    doc.setLineWidth(0.5);
+    doc.rect(5, startY, 200, boxHeight);
   };
 
   // Draw only one receipt at the top

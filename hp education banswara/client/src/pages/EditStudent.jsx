@@ -158,7 +158,7 @@ const EditStudent = () => {
 
             <div style={inputGroupStyle}>
               <label style={labelStyle}>Date of Birth</label>
-              <input style={inputStyle} type="date" required value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} />
+              <input style={inputStyle} type="date" value={formData.dob} onChange={e => setFormData({...formData, dob: e.target.value})} />
             </div>
 
             <div style={inputGroupStyle}>
