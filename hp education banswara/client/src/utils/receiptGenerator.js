@@ -39,19 +39,13 @@ export const generateReceipt = (data) => {
     doc.setFont("times", "bold");
     doc.text("HP GROUP OF EDUCATION", 105, startY + 12, { align: 'center' });
     
-    // Logos
+    // Logo
     try {
-       // Left Logo (HP Education)
-       const leftImg = new Image();
-       leftImg.src = '/hp logo.png';
-       doc.addImage(leftImg, 'PNG', -3, startY + 2, 64, 25);
-
-       // Right Logo (Saraswati Maa)
-       const rightImg = new Image();
-       rightImg.src = '/sarasvatima.png';
-       doc.addImage(rightImg, 'PNG', 168, startY + 2, 25, 25);
+       const img = new Image();
+       img.src = '/hp logo.png';
+       doc.addImage(img, 'PNG', -3, startY + 2, 64, 25);
     } catch (e) {
-       console.log("Header Logo load error:", e);
+       console.log("Logo load error:", e);
     }
     
     doc.setFontSize(9);
