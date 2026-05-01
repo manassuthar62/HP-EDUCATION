@@ -28,9 +28,7 @@ const AddStudent = () => {
 
   const showNotification = (message, type = 'success') => {
     setNotification({ show: true, message, type });
-    if (type !== 'success') {
-      setTimeout(() => setNotification({ ...notification, show: false }), 4000);
-    }
+    setTimeout(() => setNotification(prev => ({ ...prev, show: false })), 4000);
   };
 
   const validateField = (name, value) => {
@@ -695,25 +693,6 @@ const AddStudent = () => {
               </h4>
               <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>{notification.message}</p>
               
-              {notification.type === 'success' && (
-                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-                  <button 
-                    onClick={() => navigate('/id-cards')}
-                    style={{ padding: '0.4rem 0.8rem', backgroundColor: '#eff6ff', color: '#2563eb', border: '1px solid #dbeafe', borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
-                  >
-                    View All ID Cards
-                  </button>
-                  <button 
-                    onClick={() => {
-                      setNotification({ ...notification, show: false });
-                      window.location.reload(); // Quick way to reset for next student
-                    }}
-                    style={{ padding: '0.4rem 0.8rem', backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '0.5rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
-                  >
-                    Add Another
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
